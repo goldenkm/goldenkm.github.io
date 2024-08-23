@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>25-Fall 留学申请记录</title>
+    <url>/2024/08/23/25-Fall-Record/</url>
+    <content><![CDATA[<p>别着急，还没开始写呢</p>
+]]></content>
+      <categories>
+        <category>与计算机无关的东西</category>
+        <category>上岸</category>
+      </categories>
+      <tags>
+        <tag>留学</tag>
+        <tag>记录</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>OS-Lab6-挑战性任务</title>
     <url>/2024/08/18/OS-Lab6-Challenge-Experiment-Report/</url>
     <content><![CDATA[<h1 id="Lab6挑战性任务实验报告"><a href="#Lab6挑战性任务实验报告" class="headerlink" title="Lab6挑战性任务实验报告"></a>Lab6挑战性任务实验报告</h1><p>具体代码见: <a class="link"   href="https://github.com/goldenkm/BUAA-OS-2023-Spring" >BUAA-OS-2023-Spring <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
@@ -141,20 +155,6 @@
       <tags>
         <tag>C</tag>
         <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>25-Fall 留学申请记录</title>
-    <url>/2024/08/23/25-Fall-Record/</url>
-    <content><![CDATA[<p>别着急，还没开始写呢</p>
-]]></content>
-      <categories>
-        <category>与计算机无关的东西</category>
-        <category>上岸</category>
-      </categories>
-      <tags>
-        <tag>留学</tag>
-        <tag>记录</tag>
       </tags>
   </entry>
 </search>
