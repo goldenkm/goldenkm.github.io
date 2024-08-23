@@ -66,7 +66,7 @@
 <h2 id="三、实验结果"><a href="#三、实验结果" class="headerlink" title="三、实验结果"></a>三、实验结果</h2><h4 id="3-1-实现一行多命令-实现引号支持-实现程序名称中-b-的省略"><a href="#3-1-实现一行多命令-实现引号支持-实现程序名称中-b-的省略" class="headerlink" title="3.1 实现一行多命令 + 实现引号支持 + 实现程序名称中 .b 的省略"></a>3.1 实现一行多命令 + 实现引号支持 + 实现程序名称中 .b 的省略</h4><p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://github.com/goldenkm/Pic-Bed/blob/main/os-lab6-challenge/1.png"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6-challenge/1.png"
                       alt="1"
                 ></p>
 <h4 id="3-2-实现后台任务"><a href="#3-2-实现后台任务" class="headerlink" title="3.2 实现后台任务"></a>3.2 实现后台任务</h4><p><img  
@@ -79,51 +79,51 @@
 <h4 id="3-4-实现更多命令（tree-mkdir-touch）"><a href="#3-4-实现更多命令（tree-mkdir-touch）" class="headerlink" title="3.4 实现更多命令（tree mkdir touch）"></a>3.4 实现更多命令（tree mkdir touch）</h4><p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://github.com/goldenkm/Pic-Bed/blob/main/os-lab6-challenge/2.png"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6-challenge/2.png"
                       alt="2"
                 ></p>
 <h4 id="3-5-实现历史命令功能"><a href="#3-5-实现历史命令功能" class="headerlink" title="3.5 实现历史命令功能"></a>3.5 实现历史命令功能</h4><p>上下键的功能不便以图片形式展示，此处只展现history指令<br><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://github.com/goldenkm/Pic-Bed/blob/main/os-lab6-challenge/3.png"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6-challenge/3.png"
                       alt="3"
                 ></p>
 <h4 id="3-6-支持相对路径"><a href="#3-6-支持相对路径" class="headerlink" title="3.6 支持相对路径"></a>3.6 支持相对路径</h4><p>为了更贴近linux，我将指令左侧改为了学号+相对路径的形式，与跳板机的格式相同。<br><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://github.com/goldenkm/Pic-Bed/blob/main/os-lab6-challenge/4.png"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6-challenge/4.png"
                       alt="4"
                 ></p>
 <h4 id="3-7-实现-shell-环境变量"><a href="#3-7-实现-shell-环境变量" class="headerlink" title="3.7 实现 shell 环境变量"></a>3.7 实现 shell 环境变量</h4><p>依次先后测试了：不同类型环境变量的创建、删除非只读变量、删除只读变量、修改只读变量、修改非只读变量、启动子shell后能否读取局部变量。<br><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://github.com/goldenkm/Pic-Bed/blob/main/os-lab6-challenge/5.png"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6-challenge/5.png"
                       alt="5"
                 ></p>
 <h4 id="3-8-实现rm"><a href="#3-8-实现rm" class="headerlink" title="3.8 实现rm"></a>3.8 实现rm</h4><ul>
 <li>删除普通文件<br><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://github.com/goldenkm/Pic-Bed/blob/main/os-lab6-challenge/9.png"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6-challenge/9.png"
                       alt="9"
                 ></li>
 <li>递归删除目录<br><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://github.com/goldenkm/Pic-Bed/blob/main/os-lab6-challenge/10.jpeg"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6-challenge/10.jpeg"
                       alt="10"
                 ></li>
 <li>删除前询问<br><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://github.com/goldenkm/Pic-Bed/blob/main/os-lab6-challenge/8.png"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6-challenge/8.png"
                       alt="8"
                 ></li>
 </ul>
 <h3 id="3-9-实现"><a href="#3-9-实现" class="headerlink" title="3.9 实现&gt;&gt;"></a>3.9 实现&gt;&gt;</h3><p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://github.com/goldenkm/Pic-Bed/blob/main/os-lab6-challenge/11.png"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6-challenge/11.png"
                       alt="11"
                 ></p>
 <h2 id="四、实验难点及解决方案"><a href="#四、实验难点及解决方案" class="headerlink" title="四、实验难点及解决方案"></a>四、实验难点及解决方案</h2><h4 id="4-1-控制台输入部分与程序实际接收到的指令的协同"><a href="#4-1-控制台输入部分与程序实际接收到的指令的协同" class="headerlink" title="4.1 控制台输入部分与程序实际接收到的指令的协同"></a>4.1 控制台输入部分与程序实际接收到的指令的协同</h4><p>&emsp;&emsp;在user&#x2F;sh.c的readline函数中，我们的代码用的是一个名为buf的字符数组读取的输入。而如果没有引入移动光标的功能，我们可以直接向runcmd中传入这一数组进行解析。但现在引入了光标的移动，buf会读入方向键的ascii码，并且所有字符也都是顺序读入的，显然是无法直接解析的。所以我选择了将这个buf仅作为读入字符使用，实际的指令部分新建一个名为cmd的字符数组，所有更改都对cmd进行更改。</p>
