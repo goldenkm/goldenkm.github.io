@@ -72,7 +72,7 @@
 <h4 id="3-2-实现后台任务"><a href="#3-2-实现后台任务" class="headerlink" title="3.2 实现后台任务"></a>3.2 实现后台任务</h4><p><img  
                      lazyload
                      src="/images/loading.svg"
-                     data-src="https://github.com/goldenkm/Pic-Bed/blob/main/os-lab6-challenge/12.png"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6-challenge/12.png"
                       alt="12"
                 ></p>
 <h4 id="3-3-实现键入命令时任意位置的修改"><a href="#3-3-实现键入命令时任意位置的修改" class="headerlink" title="3.3 实现键入命令时任意位置的修改"></a>3.3 实现键入命令时任意位置的修改</h4><p>该任务适宜实时展现效果，难以通过图片形式看出效果</p>
