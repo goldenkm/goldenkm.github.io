@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    <meta name="author" content="jkm">
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+        
+        
+        
+            <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+        
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="http://goldenkm.github.io/2024/08/18/compiler-doc/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+        <meta name="description" content="BUAA-Compiler-2023 前言北航计算机学院2021级编译技术课设的设计文档，代码见：BUAA-Compiler-2023-Fall  一、参考编译器Pascal编译器主要由词法分析、语法分析、语义分析、代码生成、优化和链接等模块组成，以下是Pascal编译器的总体结构和各个模块的功能：  词法分析器：负责将源代码分解为词法单元，如标识符、关键字、运算符等。词法分析器通常使用有限自动机">
+<meta property="og:type" content="article">
+<meta property="og:title" content="编译设计文档">
+<meta property="og:url" content="http://goldenkm.github.io/2024/08/18/Compiler-Doc/index.html">
+<meta property="og:site_name" content="jkm&#39;s blog">
+<meta property="og:description" content="BUAA-Compiler-2023 前言北航计算机学院2021级编译技术课设的设计文档，代码见：BUAA-Compiler-2023-Fall  一、参考编译器Pascal编译器主要由词法分析、语法分析、语义分析、代码生成、优化和链接等模块组成，以下是Pascal编译器的总体结构和各个模块的功能：  词法分析器：负责将源代码分解为词法单元，如标识符、关键字、运算符等。词法分析器通常使用有限自动机">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-08-17T16:42:00.000Z">
+<meta property="article:modified_time" content="2024-08-24T14:50:21.534Z">
+<meta property="article:author" content="Kaiming Jin">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="Compiler">
+<meta property="article:tag" content="设计文档">
+<meta name="twitter:card" content="summary">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/images/avatar.jpg" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/avatar.jpg">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="/images/avatar.jpg">
+    <!--- Page Info-->
+    
+    <title>
+        
+            编译设计文档 -
+        
+        JKM&#39;s Blog
+    </title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/fonts/Chillax/chillax.css">
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/assets/build/styles.css">
+    
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/fonts/GeistMono/geist-mono.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/fonts/Geist/geist.css">
+    <!--- Font Part-->
+    
+        <link href="" rel="stylesheet">
+    
+    
+    
+    
+
+    
+        <script src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/libs/anime.min.js"></script>
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"goldenkm.github.io","root":"/","language":"zh-CN","path":"search.xml"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":true,"open_graph":true,"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/home-banner1.jpg","dark":"/images/home-banner3.jpg"},"title":"Hi!","subtitle":{"text":["你好👋","Welcome to my blog!"],"hitokoto":{"enable":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":true,"family":null,"url":null,"color":"black"},"social_links":{"enable":true,"style":"default","links":{"github":"https://github.com/goldenkm","instagram":null,"zhihu":null,"twitter":null,"email":"894082241@qq.com"},"qrs":{"weixin":"/images/wechat-code.jpg"}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.6.4","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"icon":"fa-solid fa-tags","path":"/tags"},"Categories":{"path":"/categories","icon":"fa-regular fa-list"},"Shuoshuo":{"icon":"fa-solid fa-comment-dots","path":"/shuoshuo"},"About":{"icon":"fa-regular fa-user","submenus":{"Me":"/about","Github":"https://github.com/goldenkm","Friends":"/links"}}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"left","first_item":"info","announcement":null,"show_on_mobile":true,"links":{"Tags":{"path":"/tags","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories","icon":"fa-regular fa-list"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Shuoshuo":{"icon":"fa-solid fa-comment-dots","path":"/shuoshuo"}}},"article_date_format":"auto","categories":{"enable":true,"limit":30},"tags":{"enable":true,"limit":30}},"footerStart":"2022/8/17 11:45:14"};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/fontawesome/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/fontawesome/brands.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/fontawesome/solid.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/fontawesome/regular.min.css">
+    
+    
+    
+    
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+<!--        <span class="swup-progress-icon">-->
+<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+<!--        </span>-->
+    
+</div>
+
+
+
+    <style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    <h2 class="ml13">
+        JKM&#39;s Blog
+    </h2>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+        var animation = anime.timeline({loop: true})
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [40,0],
+                translateZ: 0,
+                opacity: [0,1],
+                filter: ['blur(5px)', 'blur(0px)'], // Starting from blurred to unblurred
+                easing: "easeOutExpo",
+                duration: 1400,
+                delay: (el, i) => 300 + 30 * i,
+            }).add({
+                targets: '.ml13 .letter',
+                translateY: [0,-40],
+                opacity: [1,0],
+                filter: ['blur(0px)', 'blur(5px)'], // Ending from unblurred to blurred
+                easing: "easeInExpo",
+                duration: 1200,
+                delay: (el, i) => 100 + 30 * i,
+                complete: function() {
+                    hidePreloader(); // Call hidePreloader after the animation completes
+                }
+            });
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            setTimeout(hidePreloader, 5000); // Call hidePreloader after 5000 milliseconds if not already called by animation
+        });
+
+        function hidePreloader() {
+            var preloader = document.querySelector('.preloader');
+            preloader.style.opacity = '0';
+            setTimeout(function () {
+                preloader.style.display = 'none';
+            }, 200);
+        }
+    </script>
+</div>
+
+<main class="page-container" id="swup">
+
+    
+
+    <div class="main-content-container">
+
+
+        <div class="main-content-header">
+            <header class="navbar-container px-6 md:px-12">
+
+    <div class="navbar-content ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                JKM&#39;s Blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/archives"
+                                        >
+                                    <i class="fa-regular fa-archive fa-fw"></i>
+                                    归档
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/tags"
+                                        >
+                                    <i class="fa-solid fa-tags fa-fw"></i>
+                                    标签
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/categories"
+                                        >
+                                    <i class="fa-regular fa-list fa-fw"></i>
+                                    分类
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/shuoshuo"
+                                        >
+                                    <i class="fa-solid fa-comment-dots fa-fw"></i>
+                                    说说
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    关于
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a href="/about">
+                                                    ME
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/goldenkm">
+                                                    GITHUB
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a href="/links">
+                                                    友情链接
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-screen w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/archives"
+                        >
+                            <span>
+                                归档
+                            </span>
+                            
+                                <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/tags"
+                        >
+                            <span>
+                                标签
+                            </span>
+                            
+                                <i class="fa-solid fa-tags fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/categories"
+                        >
+                            <span>
+                                分类
+                            </span>
+                            
+                                <i class="fa-regular fa-list fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/shuoshuo"
+                        >
+                            <span>
+                                说说
+                            </span>
+                            
+                                <i class="fa-solid fa-comment-dots fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                关于
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           href="/about">ME</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/goldenkm">GITHUB</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           href="/links">友情链接</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    
+                    
+                    
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">12</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">3</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">7</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="main-content-body">
+
+            
+
+            <div class="main-content">
+
+                
+                    <div class="post-page-container flex relative justify-between box-border w-full h-full">
+    <div class="article-content-container">
+
+        <div class="article-title relative w-full">
+            
+                <div class="w-full flex items-center pt-6 justify-start">
+                    <h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">编译设计文档</h1>
+                </div>
+            
+            </div>
+
+        
+            <div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+                <div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+                    <img src="/images/avatar.jpg">
+                </div>
+                <div class="info flex flex-col justify-between">
+                    <div class="author flex items-center">
+                        <span class="name text-default-text-color text-lg font-semibold">jkm</span>
+                        
+                            <span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv1</span>
+                        
+                    </div>
+                    <div class="meta-info">
+                        <div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2024-08-18 00:42</span>
+        <span class="mobile">2024-08-18 00:42</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2024-08-24 22:50:21</span>
+            <span class="mobile">2024-08-24 22:50:21</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/%E4%B8%93%E4%B8%9A%E8%AF%BE/">专业课</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/Java/">Java</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/Compiler/">Compiler</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%96%87%E6%A1%A3/">设计文档</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+                    </div>
+                </div>
+            </div>
+        
+
+        
+
+
+        <div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+            <h1 id="BUAA-Compiler-2023"><a href="#BUAA-Compiler-2023" class="headerlink" title="BUAA-Compiler-2023"></a>BUAA-Compiler-2023</h1><hr>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>北航计算机学院2021级编译技术课设的设计文档，代码见：<a class="link"   target="_blank" rel="noopener" href="https://github.com/goldenkm/BUAA-Compiler-2023-Fall" >BUAA-Compiler-2023-Fall <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="一、参考编译器"><a href="#一、参考编译器" class="headerlink" title="一、参考编译器"></a>一、参考编译器</h2><p>Pascal编译器主要由词法分析、语法分析、语义分析、代码生成、优化和链接等模块组成，以下是Pascal编译器的总体结构和各个模块的功能：</p>
+<ol>
+<li><p>词法分析器：负责将源代码分解为词法单元，如标识符、关键字、运算符等。词法分析器通常使用有限自动机或正则表达式来识别词法单元，并将它们转换成内部表示形式。</p>
+<div class="highlight-container" data-rel="Pascal"><figure class="iseeu highlight pascal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">insymbol</span>;</span>  <span class="comment">&#123;reads next symbol&#125;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">nextch</span>;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>语法分析器：将词法单元转换成语法树，以便后续处理。语法分析器通常使用递归下降分析、LR分析等算法来构建语法树。</p>
+<div class="highlight-container" data-rel="Pascal"><figure class="iseeu highlight pascal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">constdec</span>;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">typedeclaration</span>;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">variabledeclaration</span>;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>语义分析器：检查语法树的语义正确性，如类型检查、作用域检查等。语义分析器将对语法树进行遍历，查找并修正语义错误。</p>
+<div class="highlight-container" data-rel="Pascal"><figure class="iseeu highlight pascal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">errormsg</span>;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">fatal</span><span class="params">( n: integer )</span>;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>代码生成器：将语法树转换为目标机器的可执行代码。代码生成器将语法树转换成目标机器的汇编或机器码。</p>
+</li>
+</ol>
+<p>在接口设计方面，Pascal编译器可能提供命令行接口或集成开发环境（IDE）界面，用于用户输入源代码并获取编译结果。用户可以通过命令行参数或IDE菜单来指定编译选项和目标平台等参数。文件组织方面，编译器通常会将中间代码或目标代码输出到特定格式的文件中，以便后续链接、优化或执行。</p>
+<p>除了Pascal编译器，我参考的更多的其实是理论课程的课件和往届学长的博客与代码，再加上与同学的交流，在此基础上完成了我的编译器。</p>
+<h2 id="二、编译器总体设计"><a href="#二、编译器总体设计" class="headerlink" title="二、编译器总体设计"></a>二、编译器总体设计</h2><h3 id="2-1-总体结构"><a href="#2-1-总体结构" class="headerlink" title="2.1 总体结构"></a>2.1 总体结构</h3><p>本编译器采用目前静态编译器最主流的三端设计：前端（Frontend）、中端（Middle）、后端（Backend）。这三端分别有如下工作：</p>
+<ul>
+<li>前端：词法分析、语法分析、错误处理、符号表的建立</li>
+<li>中端：中间代码生成（LLVM），部分代码优化</li>
+<li>后端：目标代码生成</li>
+</ul>
+<h3 id="2-2-接口设计"><a href="#2-2-接口设计" class="headerlink" title="2.2 接口设计"></a>2.2 接口设计</h3><p>上述编译阶段各自独立工作，在主类Compiler里串连在一起，其中各工作阶段之间传递信息如下所示：</p>
+<ul>
+<li><strong>词法分析 -&gt; 语法分析</strong>：Lexer产出一个<code>ArrayList&lt;Token&gt;</code>，作为Parser类的输入，其中<code>Token</code>是一个词法标志，具有类型、行号等信息。</li>
+<li><strong>语法分析 -&gt; 中间代码生成</strong>：Parser负责建立语法树，并将语法树的根节点<code>CompUnit</code>返回，作为中间代码架构器<code>IrBuilder</code>的输入。</li>
+<li><strong>中间代码生成 -&gt; 目标代码生成</strong>：<code>IrBuilder</code>在中间代码生成阶段同样建立一个树形结构，其中<code>IrModule</code>是LLVM的最上层单元，也是该树的根节点，将<code>IrModule</code>作为输入传入目标代码生成器<code>MipsBuilder</code>。</li>
+</ul>
+<p>除了以上各编译阶段之间的接口设计，在各阶段内部还设计有若干接口（Interface）以更好地实现功能，下面将依次阐述：</p>
+<ul>
+<li><strong>语法分析</strong>：<br>  依据文法，凡是具有共性的文法单元均可建立接口，从上到下依次是：<ul>
+<li>块内元素：BlockItem</li>
+<li>语句：Stmt</li>
+<li>初值：InitialValue</li>
+<li>单目表达式的组成部分：UnaryBase</li>
+</ul>
+</li>
+<li><strong>中间代码生成</strong>：<ul>
+<li>指令：Instruction</li>
+</ul>
+</li>
+<li><strong>目标代码生成</strong>：<ul>
+<li>指令：MipsInstruction</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-3-文件组织"><a href="#2-3-文件组织" class="headerlink" title="2.3 文件组织"></a>2.3 文件组织</h3><p>本编译器整体文件树如下所示：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">├─Backend</span><br><span class="line">    ├─Instrctions</span><br><span class="line">        ├─Macro</span><br><span class="line">            └─ macro...</span><br><span class="line">        └─instructions...</span><br><span class="line">    ├─MipsSymbolManager</span><br><span class="line">        ├─MipsSymbolTable</span><br><span class="line">        ├─MipsValue</span><br><span class="line">    ├─MipsBuilder</span><br><span class="line">    ├─MipsInstrType</span><br><span class="line">    ├─MipsModule</span><br><span class="line">    └─RegManager</span><br><span class="line">├─Frontend</span><br><span class="line">    ├─Lexer</span><br><span class="line">        ├─Lexer</span><br><span class="line">        ├─Token</span><br><span class="line">    ├─Parser</span><br><span class="line">        ├─Error</span><br><span class="line">        ├─Parser</span><br><span class="line">    ├─SymbolTableManager</span><br><span class="line">        ├─FuncSymbol</span><br><span class="line">        ├─Symbol</span><br><span class="line">        ├─SymbolTable</span><br><span class="line">        ├─SymbolType</span><br><span class="line">    └─SyntaxComponents</span><br><span class="line">        └─syntax components...</span><br><span class="line">├─Middle</span><br><span class="line">    ├─IrComponents</span><br><span class="line">        └─ir components...</span><br><span class="line">    └─IrBuilder</span><br><span class="line">└─Compiler</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="三、词法分析设计"><a href="#三、词法分析设计" class="headerlink" title="三、词法分析设计"></a>三、词法分析设计</h2><h3 id="3-1-读入文件"><a href="#3-1-读入文件" class="headerlink" title="3.1 读入文件"></a>3.1 读入文件</h3><p>词法分析是编译器工作的首个阶段，首先要将待编译的源文件读进编译器。经过我和同伴的交流，读入文件有两种方式，其一是一次性将程序读入编译器，这应该也是大多数人采用的方式；其二是我本人采用的由源文件逐行读入进编译器。</p>
+<p>这两种方式可以说是各有千秋，若是逐行读入程序，则每个词法单元的行号是不需要单独考虑的，不会受到字符串里<code>&#39;\n&#39;</code>的影响；但由于每一行的字符串单独处理，需要时常考虑字符串下标是否越界的情况。而若是整体读入源程序，则不需要考虑字符串下标越界的情况，但是对于换行的处理就复杂很多，要屏蔽掉注释与字符串里的<code>&#39;\n&#39;</code>。</p>
+<h3 id="3-2-架构"><a href="#3-2-架构" class="headerlink" title="3.2 架构"></a>3.2 架构</h3><h4 id="3-2-1-Token"><a href="#3-2-1-Token" class="headerlink" title="3.2.1 Token"></a>3.2.1 Token</h4><p>设计Token类来代表词法单元，记录下该token的名称、种类、行号，并对这三个属性分别提供get方法。</p>
+<h4 id="3-2-2-Lexer"><a href="#3-2-2-Lexer" class="headerlink" title="3.2.2 Lexer"></a>3.2.2 Lexer</h4><p>设计Lexer类（词法分析器），其属性有：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> String input;   <span class="comment">//输入，单行程序</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="variable">pos</span> <span class="operator">=</span> <span class="number">0</span>;    <span class="comment">//处理到了输入的哪个字符</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] keywords; <span class="comment">//关键词集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] operator; <span class="comment">//操作符集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] brackets; <span class="comment">//括号集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] punctuation; <span class="comment">//标点集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] whitespace; <span class="comment">//空白符集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Token&gt;;     <span class="comment">//解析出的token集合</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> isSingleLineComment; <span class="comment">//判断是否处于单行注释中</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> isMultilineComment; <span class="comment">//判断是否处于多行注释中</span></span><br></pre></td></tr></table></figure></div>
+<p><strong>工作流程</strong>：遍历input，判断pos位置上的字符。可以进入以下分支：关键词、标识符、数字、运算符、括号、标点符号。其中关键词与标识符的first集有重叠，可以将单词解析完以后再进行判断，其余分支的first集无重叠。整体流程参考理论课程内容。</p>
+<p><strong>方法</strong>：根据上述不同分支，提供以下方法</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> String <span class="title function_">getWord</span><span class="params">()</span>     <span class="comment">//解析一个单词</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">getNum</span><span class="params">()</span>      <span class="comment">//解析一个数字</span></span><br><span class="line"><span class="keyword">public</span> Token <span class="title function_">dealOperator</span><span class="params">(<span class="type">int</span> line)</span>     <span class="comment">//处理操作符</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">getString</span><span class="params">()</span>   <span class="comment">//解析一个字符串</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">initializeMap</span><span class="params">()</span> &#123;   <span class="comment">//初始化token与type的映射</span></span><br><span class="line">        tokenTypeMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        tokenTypeMap.put(<span class="string">&quot;Ident&quot;</span>, <span class="string">&quot;IDENFR&quot;</span>);</span><br><span class="line">        ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="3-3-编码完成之后的修改"><a href="#3-3-编码完成之后的修改" class="headerlink" title="3.3 编码完成之后的修改"></a>3.3 编码完成之后的修改</h3><p>正如同之前所说，我读入文件的方式是逐行读入，Lexer的input属性是源程序的一行，所以在逐个字符解析input的时候需要特别注意下标越界的问题，否则诸如<code>input.charAt(pos)</code>这样的代码就有可能抛出异常。</p>
+<p>以下是一个需要特别考虑的例子，这个例子在词法分析、语法分析甚至期中考试都没有遇到，但在代码生成二中耗费了我很长时间去debug。</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (a &lt;</span><br><span class="line">        b) &#123;</span><br><span class="line">    <span class="comment">// code</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="四、语法分析"><a href="#四、语法分析" class="headerlink" title="四、语法分析"></a>四、语法分析</h2><h3 id="4-1-架构"><a href="#4-1-架构" class="headerlink" title="4.1 架构"></a>4.1 架构</h3><h4 id="4-1-1-Parser"><a href="#4-1-1-Parser" class="headerlink" title="4.1.1 Parser"></a>4.1.1 Parser</h4><p><strong>属性</strong>：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Token&gt; tokens; <span class="comment">//Lexer的输出，token集合</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> pointer;    <span class="comment">//与tokens配合，判断当前处理到哪个token</span></span><br><span class="line"><span class="keyword">private</span> String curToken;    <span class="comment">//当前处理的token</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;String&gt; syntaxOutput; <span class="comment">//输出集合</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Error&gt; errorOutput; <span class="comment">//错误处理的输出</span></span><br><span class="line"><span class="comment">//两个临时集合，目的在后续会详细解释</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;String&gt; tmpOutput;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Error&gt; tmpErrorOutput;</span><br><span class="line"></span><br><span class="line"><span class="comment">//有关符号表的属性</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> HashMap&lt;Integer, SymbolTable&gt;</span><br><span class="line">                        symbolTables;   <span class="comment">//所有的符号表</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> currentTableId;     <span class="comment">//当前表的id</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> fatherTableId;      <span class="comment">//父级表的id</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> countOfTable;       <span class="comment">//符号表的数量</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//一些状态标记，有时需要跨函数判断</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> currentFuncType;  <span class="comment">//当前函数的类型，0：void，1：int</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> canBorC;        <span class="comment">// 可不可以break或continue</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> timeStop;</span><br></pre></td></tr></table></figure></div>
+<h4 id="4-1-2-SyntaxComponents-语法成分"><a href="#4-1-2-SyntaxComponents-语法成分" class="headerlink" title="4.1.2 SyntaxComponents 语法成分"></a>4.1.2 SyntaxComponents 语法成分</h4><p>文法中有很多种语法成分，一眼望去让人非常眼花缭乱，在语法分析之前我们有必要先对诸多语法成分进行分类和抽象。</p>
+<h5 id="4-1-2-1-Exp"><a href="#4-1-2-1-Exp" class="headerlink" title="4.1.2.1 Exp"></a>4.1.2.1 Exp</h5><p>各种Exp，如AddExp、MulExp等等，占据了语法成分的很大一部分，然而我们不难发现各种表达式都具有极高的相似度。例如AddExp在文法中：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AddExp → MulExp | AddExp (&#x27;+&#x27; | &#x27;−&#x27;) MulExp</span><br></pre></td></tr></table></figure></div>
+<p>其他表达式的解析文法类似于AddExp，并且其是左递归的，可以将其改写为：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AddExp → MulExp &#123;(&#x27;+&#x27; | &#x27;−&#x27;) MulExp&#125;</span><br></pre></td></tr></table></figure></div>
+<p>所以可以将所有表达式抽象为如下形式：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Exp -&gt; Base &#123;(&#x27;op1&#x27; | &#x27;op2&#x27; |...) Base&#125;</span><br></pre></td></tr></table></figure></div>
+<p>故建立一个ExpTemplate类（表达式模版），如下所示：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ExpTemplate</span> &#123;</span><br><span class="line">    <span class="comment">//此表达式实际有的操作符</span></span><br><span class="line">    <span class="keyword">protected</span> ArrayList&lt;String&gt; opList;</span><br><span class="line">    <span class="comment">//构成表达式的操作数</span></span><br><span class="line">    <span class="keyword">protected</span> ArrayList&lt;ExpTemplate&gt; bases;</span><br><span class="line">    <span class="comment">//该类表达式允许有的操作符</span></span><br><span class="line">    <span class="keyword">protected</span> ArrayList&lt;String&gt; stdOpList;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ExpTemplate</span><span class="params">()</span></span><br><span class="line">    <span class="comment">//添加op之前要验证op在不在stdOpList里</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addOp</span><span class="params">(String op)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addBase</span><span class="params">(ExpTemplate base)</span></span><br><span class="line">    </span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>让所有的表达式都继承这个父类，只需要重写构造函数，在初始时就加入该类表达式应该有的操作符即可。例如：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">AddExp</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>();</span><br><span class="line">    <span class="built_in">super</span>.stdOpList.add(<span class="string">&quot;+&quot;</span>);</span><br><span class="line">    <span class="built_in">super</span>.stdOpList.add(<span class="string">&quot;-&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>如此便省去了我们许多编码的时间。</p>
+<h5 id="4-1-2-2-InitVal-初值"><a href="#4-1-2-2-InitVal-初值" class="headerlink" title="4.1.2.2 InitVal 初值"></a>4.1.2.2 InitVal 初值</h5><p>观察语法成分，ConstInitVal与InitVal除了需要判断表达式是否为常量外，没有区别，故可以建立一个接口将二者统一起来，并且后续在中间代码生成阶段需要获取初值的表达式时，也可以不用区分二者。可以建立如下接口：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">InitialVal</span> &#123;</span><br><span class="line">    Exp <span class="title function_">getExp</span><span class="params">()</span>;   <span class="comment">//普通常量</span></span><br><span class="line">    ArrayList&lt;Exp&gt; <span class="title function_">getExps</span><span class="params">()</span>;   <span class="comment">//一维数组</span></span><br><span class="line">    ArrayList&lt;ArrayList&lt;Exp&gt;&gt; <span class="title function_">getExpArrays</span><span class="params">()</span>;   <span class="comment">//二维数组</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h5 id="4-1-2-3-Def与Decl"><a href="#4-1-2-3-Def与Decl" class="headerlink" title="4.1.2.3 Def与Decl"></a>4.1.2.3 Def与Decl</h5><p>Def、ConstDef与ConstDecl也是文法中的两对成分，而他们之间除了是否是常量以外也没有任何区别，所以不用对此进行区分，只需要在属性中加入一个<code>isConst</code>即可</p>
+<h5 id="4-1-2-3-Stmt与BlockItem"><a href="#4-1-2-3-Stmt与BlockItem" class="headerlink" title="4.1.2.3 Stmt与BlockItem"></a>4.1.2.3 Stmt与BlockItem</h5><p>各种Stmt与BlockItem只需建立一个接口即可，但他们之间并没有什么方法可以抽象，但是后续中间代码生成时需要使用。</p>
+<h5 id="4-1-2-4-其他"><a href="#4-1-2-4-其他" class="headerlink" title="4.1.2.4 其他"></a>4.1.2.4 其他</h5><p>其他语法成分没有什么可以进一步抽象的，为每一个成分单独建类即可。</p>
+<h4 id="4-1-3-Error"><a href="#4-1-3-Error" class="headerlink" title="4.1.3 Error"></a>4.1.3 Error</h4><p>顾名思义，代表一个错误，为错误处理而建立的类，记录下该错误所在的行号与类型。</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Error</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> line;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">char</span> errorType;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Error</span><span class="params">(<span class="type">int</span> line, <span class="type">char</span> errorType)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getLine</span><span class="params">()</span> </span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">char</span> <span class="title function_">getErrorType</span><span class="params">()</span> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="4-2-符号表"><a href="#4-2-符号表" class="headerlink" title="4.2 符号表"></a>4.2 符号表</h3><p>如果只是单纯的建立语法树，那么符号表并非必须，但后续的中间代码生成以及错误处理部分，就需要符号表的帮助了。</p>
+<h4 id="4-2-1-Symbol"><a href="#4-2-1-Symbol" class="headerlink" title="4.2.1 Symbol"></a>4.2.1 Symbol</h4><p>有如下几种情况需要建立一个symbol：</p>
+<ul>
+<li>ConstDef</li>
+<li>Def</li>
+<li>FuncDef</li>
+</ul>
+<p>并且Symbol应当存储有以下信息（此处仅考虑错误处理时的设计，后续中端代码生成阶段还需要增量开发）：</p>
+<ul>
+<li>行号（错误处理需要输出）</li>
+<li>所在的符号表</li>
+<li>符号名称</li>
+<li>种类</li>
+<li>是否为常量</li>
+</ul>
+<p>故Symbol的属性有：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Symbol</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> line;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolTable symbolTable;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String token;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolType type;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> isConst;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>上述代码中出现的SymbolType为一枚举类，记录符号的类型，如下所示：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">SymbolType</span> &#123;</span><br><span class="line">    VAR,        <span class="comment">//普通变量</span></span><br><span class="line">    ARRAY1,     <span class="comment">//一维数组</span></span><br><span class="line">    ARRAY2,     <span class="comment">//二维数组</span></span><br><span class="line">    FUNC,       <span class="comment">//函数</span></span><br><span class="line">    ERROR       <span class="comment">//错误</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h4 id="4-2-2-SymbolTable"><a href="#4-2-2-SymbolTable" class="headerlink" title="4.2.2 SymbolTable"></a>4.2.2 SymbolTable</h4><p>本编译器采用的符号表是树形符号表，而非理论课所讲的栈式符号表，树形符号表更适合递归下降的处理方式，故采用。</p>
+<p>首先依旧是明确什么时候需要建立一个符号表：</p>
+<ul>
+<li>程序最开始时</li>
+<li>进入到一个block时</li>
+</ul>
+<p>只有以上两点需要建立符号表。其次是符号表需要记录的信息，如下所示：</p>
+<ul>
+<li>id（符号表的标识）</li>
+<li>父表（结束一个block时要退回到父表）</li>
+<li>符号集合</li>
+</ul>
+<p>将上述分析过程转换为代码，即：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SymbolTable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolTable fatherTable;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;String, Symbol&gt; symbols;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>最后是功能分析，符号表的主要功能主要有两点：</p>
+<ul>
+<li>增加符号（如果重复添加就报b类错误）</li>
+<li>查找符号（如果本层没有就要去父表继续查找）</li>
+</ul>
+<p>转化为代码：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SymbolTable</span> &#123;</span><br><span class="line">    <span class="comment">// 属性...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addSymbol</span><span class="params">(Symbol symbol)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (symbols.containsKey(token)) &#123;</span><br><span class="line">            <span class="comment">//转错误处理</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// add symbol</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Symbol <span class="title function_">findSymbol</span><span class="params">(String token)</span> &#123;</span><br><span class="line">        <span class="comment">//从自己开始查</span></span><br><span class="line">        currentTable = <span class="built_in">this</span>;</span><br><span class="line">        <span class="keyword">while</span> (<span class="comment">/*当前表不为null*/</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (currentTable.containsSymbol(token)) &#123;</span><br><span class="line">                <span class="keyword">return</span> currentTable.getSymbol(token);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//在当前表没找到就去父表继续查</span></span><br><span class="line">            currentTable = currentTable.getFatherTable();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//没找到</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="4-3-部分实现细节"><a href="#4-3-部分实现细节" class="headerlink" title="4.3 部分实现细节"></a>4.3 部分实现细节</h3><h4 id="4-3-1-整体思路"><a href="#4-3-1-整体思路" class="headerlink" title="4.3.1 整体思路"></a>4.3.1 整体思路</h4><p>整体的实现思路是为每一条文法都建立一个方法，在方法内部不断调用<code>next()</code>方法读取下一个Token。并且各个方法之间存在着递归下降的关系，之前也提到过已经在设计部分将左递归文法改写完毕，所以不存在无法终止的现象，这一点与理论课程及其他编译器的处理类似，此处不过多赘述。以下针对一些特殊情况简要介绍一下本人的处理思路。</p>
+<h4 id="4-3-2-多产生式的处理"><a href="#4-3-2-多产生式的处理" class="headerlink" title="4.3.2 多产生式的处理"></a>4.3.2 多产生式的处理</h4><p>对于多产生式，如果是各个产生式的<code>First集</code>不存在交集的情况，只需要根据各个产生式的<code>First集</code>判断然后进入不同的分支即可，对于绝大多数的多产生式，我们都可以通过预读一个token的方法来解决。故需要实现一个<code>getNextToken()</code>方法，注意此处只能预读而不能将pointer真的增加。：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> String <span class="title function_">getNextToken</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> tokens.get(pointer + <span class="number">1</span>).getToken();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>而对于个别情况，其产生式的<code>First集</code>是有交集的，例如：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Stmt → LVal <span class="string">&#x27;=&#x27;</span> Exp <span class="string">&#x27;;&#x27;</span>    <span class="comment">// FIRST=&#123;Ident&#125;</span></span><br><span class="line">| LVal <span class="string">&#x27;=&#x27;</span> <span class="string">&#x27;getint&#x27;</span><span class="string">&#x27;(&#x27;</span><span class="string">&#x27;)&#x27;</span><span class="string">&#x27;;&#x27;</span>    <span class="comment">// FIRST=&#123;Ident&#125;</span></span><br><span class="line">| [Exp] <span class="string">&#x27;;&#x27;</span>     <span class="comment">// FIRST=&#123;(,Number,Ident,+,-,!&#125;</span></span><br></pre></td></tr></table></figure></div>
+<p>本编译器处理这种情况采取的方法整体借鉴教程，但实现细节不太一样。此前提到过，我在Parser类里开了几个全局变量：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Parser</span> &#123;</span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;String&gt; tmpOutput;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Error&gt; tmpErrorOutput;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> timeStop;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>其中，<code>timeStop</code>是一个状态标记，当解析到一个标识符（上述三条产生式的<code>First集</code>的交集）时，就将timeStop置为true，意为此时模拟一种暂停的情况，是一个“试探”的过程。然后调用<code>parseExp()</code>方法，注意此时解析带来的所有语法输出不能直接加入<code>syntaxOutput</code>，应该先加入一个临时的集合中，因为如果最后发现正在解析的不是<code>Exp</code>而是<code>LVal</code>，再去删除这部分语法输出就会很麻烦，错误处理输出同理。</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">addSyntaxOutput</span><span class="params">(String s)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!timeStop) &#123;</span><br><span class="line">        syntaxOutput.add(s);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        tmpOutput.add(s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>解析完以后观察<code>curToken</code>，若是<code>&#39;;&#39;</code>，就说明是<code>[Exp] &#39;;&#39;</code>这条文法，就将临时集合里的输出加入正式结果；若是 <code>&#39;=&#39;</code>，就说明是<code>LVal &#39;=&#39; Exp &#39;;&#39;</code>或者<code>LVal &#39;=&#39; &#39;getint&#39;&#39;(&#39;&#39;)&#39;&#39;;&#39;</code>，再进行进一步判断就很简单了。</p>
+<h4 id="4-3-3-进入一个作用域的流程"><a href="#4-3-3-进入一个作用域的流程" class="headerlink" title="4.3.3 进入一个作用域的流程"></a>4.3.3 进入一个作用域的流程</h4><div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Parser</span> &#123;</span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">    <span class="comment">// 为处理符号表设计的全局变量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> currentTableId;     <span class="comment">// 当前表的id</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> fatherTableId;      <span class="comment">// 父级表的id</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> countOfTable;       <span class="comment">// 表的数量</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>进入一个作用域（block），有如下几件事需要做：</p>
+<ol>
+<li>将全局变量中的fatherTableId赋值为当前符号表的id</li>
+<li>建立属于本作用域的符号表</li>
+<li>将currentTableId赋值为新建立的表的id</li>
+<li>语法分析</li>
+<li>将currentTableId重新赋为fatherTableId</li>
+</ol>
+<h2 id="五、错误处理"><a href="#五、错误处理" class="headerlink" title="五、错误处理"></a>五、错误处理</h2><p>本编译器所有错误处理均是在语法分析过程中实现，没有将其作为一个单独的步骤。</p>
+<h3 id="5-1-非法符号"><a href="#5-1-非法符号" class="headerlink" title="5.1 非法符号"></a>5.1 非法符号</h3><ul>
+<li><strong>错误类别码</strong>：a</li>
+<li><strong>解释</strong>：格式字符串中出现非法字符报错行号为<code>FormatString</code>所在行数。</li>
+<li><strong>处理思路</strong>：在语法分析中实现，遍历到<code>printf</code>时检查一下<code>formatString</code>是否符合要求即可。只是对字符串进行处理，较为简单，不多赘述。</li>
+</ul>
+<h3 id="5-2-名字重定义"><a href="#5-2-名字重定义" class="headerlink" title="5.2 名字重定义"></a>5.2 名字重定义</h3><ul>
+<li><strong>错误类别码</strong>：b</li>
+<li><strong>解释</strong>：函数名或者变量名在当前作用域下重复定义。注意，变量一定是同一级作用域下才会判定出错，不同级作用域下，内层会覆盖外层定义。报错行号为 <code>Ident</code>所在行数。</li>
+<li><strong>处理思路</strong>：在<code>parseDef/parseConstDef</code>中实现，当定义一个新的标识符时，就要加入符号表，在加入符号表的时候检查是否重复，具体代码如4.2.2所示</li>
+</ul>
+<h3 id="5-3-未定义的名字"><a href="#5-3-未定义的名字" class="headerlink" title="5.3 未定义的名字"></a>5.3 未定义的名字</h3><ul>
+<li><strong>错误类别码</strong>：c</li>
+<li><strong>解释</strong>：使用了未定义的标识符报错行号为 <code>Ident</code> 所在行数。</li>
+<li><strong>处理思路</strong>：在语法分析中实现，如<code>4.2.2 SymbolTable</code>一节中代码所示，当我需要查找符号表时，自底向上查找，如果没有找到就说明使用了未定义的名字。</li>
+</ul>
+<h3 id="5-4-函数参数个数不匹配"><a href="#5-4-函数参数个数不匹配" class="headerlink" title="5.4 函数参数个数不匹配"></a>5.4 函数参数个数不匹配</h3><ul>
+<li><strong>错误类别码</strong>：d</li>
+<li><strong>解释</strong>：函数调用语句中，参数个数与函数定义中的参数个数不匹配。报错行号为函数调用语句的函数名所在行数。</li>
+<li><strong>处理思路</strong>：单独为函数型符号设置一个类，让其继承<code>Symbol</code>类，除了常规symbol记录的信息外，还需记录函数的类型，参数。代码如下所示：  <div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FuncSymbol</span> <span class="keyword">extends</span> <span class="title class_">Symbol</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> funcType;     <span class="comment">// 0: void, 1: int</span></span><br><span class="line">    <span class="comment">// 只存储参数的类型</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;SymbolType&gt; params; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+  由于编译器只需要校验参数的类型、个数，所以我只需要存储参数的类型即可。在调用函数时，也就是<code>parseLval()</code>这个函数中，需要解析小括号内有多少个逗号，参数的个数应该是逗号的个数+1。注意这里不能直接解析参数的个数，因为这样是要以右括号为循环终止条件的，右括号有可能缺失。</li>
+</ul>
+<h3 id="5-5-函数参数类型不匹配"><a href="#5-5-函数参数类型不匹配" class="headerlink" title="5.5 函数参数类型不匹配"></a>5.5 函数参数类型不匹配</h3><ul>
+<li><strong>错误类别码</strong>：e</li>
+<li><strong>解释</strong>：函数调用语句中，参数个数与函数定义中的参数类型不匹配。报错行号为函数调用语句的函数名所在行数。</li>
+<li><strong>处理思路</strong>：类比<code>5.5 函数参数个数不匹配</code>这一部分，只要在检查参数个数的时候再检查类型就行了。</li>
+</ul>
+<h3 id="5-6-无返回值的函数存在不匹配的return语句"><a href="#5-6-无返回值的函数存在不匹配的return语句" class="headerlink" title="5.6 无返回值的函数存在不匹配的return语句"></a>5.6 无返回值的函数存在不匹配的return语句</h3><ul>
+<li><strong>错误类别码</strong>：f</li>
+<li><strong>解释</strong>：报错行号为 ‘return’ 所在行号。</li>
+<li><strong>处理思路</strong>：如此前代码所示，在<code>Parser</code>中开一个全局变量<code>currentFuncType</code>，在<code>parseFuncDef()</code>中为<code>currentFuncType</code>赋值，如果是void就是0，是int就是1。在<code>parseReturnStmt()</code>，如果当前<code>currentFuncType</code> &#x3D; 0，并且如果return之后的token的类别是<code>Ident</code>、<code>IntCon</code>或者是<code>UnaryOp</code>，那么就需要说明存在f类错误。</li>
+</ul>
+<h3 id="5-7-有返回值的函数缺少return语句"><a href="#5-7-有返回值的函数缺少return语句" class="headerlink" title="5.7 有返回值的函数缺少return语句"></a>5.7 有返回值的函数缺少return语句</h3><ul>
+<li><strong>错误类别码</strong>：g</li>
+<li><strong>解释</strong>：只需要考虑函数末尾是否存在return语句，无需考虑数据流。报错行号为函数结尾的’}’ 所在行号。</li>
+<li><strong>处理思路</strong>：类比上一类错误，在函数解析完后，如果<code>currentFuncType</code> &#x3D; 1，并且block的最后一条语句不是return，就要报错。</li>
+</ul>
+<h3 id="5-8-不能改变常量的值"><a href="#5-8-不能改变常量的值" class="headerlink" title="5.8 不能改变常量的值"></a>5.8 不能改变常量的值</h3><ul>
+<li><strong>错误类别码</strong>：h</li>
+<li><strong>解释</strong>：<code>LVal</code>为常量时，不能对其修改。报错行号为 <code>LVal</code> 所在行号。</li>
+<li><strong>处理思路</strong>：在赋值语句与getint语句时，检查<code>LVal</code>所对应的Symbol是否是常量，如果是的话，报错。</li>
+</ul>
+<h3 id="5-9-缺少分号"><a href="#5-9-缺少分号" class="headerlink" title="5.9 缺少分号"></a>5.9 缺少分号</h3><ul>
+<li><strong>错误类别码</strong>：i</li>
+<li><strong>解释</strong>：报错行号为分号前一个非终结符所在行号。</li>
+<li><strong>处理思路</strong>：这类错误非常常见，没有什么特别好的处理办法，只能在逐个token解析时加以判断。</li>
+</ul>
+<h3 id="5-10-缺少右小括号"><a href="#5-10-缺少右小括号" class="headerlink" title="5.10 缺少右小括号"></a>5.10 缺少右小括号</h3><ul>
+<li><strong>错误类别码</strong>：j</li>
+<li><strong>解释</strong>：报错行号为右小括号前一个非终结符所在行号。</li>
+<li><strong>处理思路</strong>：在逐个token解析时加以判断。</li>
+</ul>
+<h3 id="5-11-缺少右中括号"><a href="#5-11-缺少右中括号" class="headerlink" title="5.11 缺少右中括号"></a>5.11 缺少右中括号</h3><ul>
+<li><strong>错误类别码</strong>：k</li>
+<li><strong>解释</strong>：报错行号为右中括号前一个非终结符所在行号。</li>
+<li><strong>处理思路</strong>：在逐个token解析时加以判断。</li>
+</ul>
+<h3 id="5-12-printf中格式字符与表达式个数不匹配"><a href="#5-12-printf中格式字符与表达式个数不匹配" class="headerlink" title="5.12 printf中格式字符与表达式个数不匹配"></a>5.12 printf中格式字符与表达式个数不匹配</h3><ul>
+<li><strong>错误类别码</strong>：l</li>
+<li><strong>解释</strong>：报错行号为 ‘printf’ 所在行号。</li>
+<li><strong>处理思路</strong>：类似于函数调用的实参问题，统计逗号的个数，再与<code>%d</code>的个数相比较，对不上就报错。</li>
+</ul>
+<h3 id="5-13-在非循环块中使用break和continue语句"><a href="#5-13-在非循环块中使用break和continue语句" class="headerlink" title="5.13 在非循环块中使用break和continue语句"></a>5.13 在非循环块中使用break和continue语句</h3><ul>
+<li><strong>错误类别码</strong>：m</li>
+<li><strong>解释</strong>：报错行号为 ‘break’ 与 ’continue’ 所在行号。</li>
+<li><strong>处理思路</strong>：全局变量开了一个<code>canBorC</code>，意思是判断是否可以出现<code>break</code>或<code>continue</code>。当解析到<code>if</code>语句或者<code>for</code>语句时，就将该全局变量设为真，解析结束就将其置为假。</li>
+</ul>
+<h2 id="六、中端代码生成"><a href="#六、中端代码生成" class="headerlink" title="六、中端代码生成"></a>六、中端代码生成</h2><p>综合多方面考虑，我选择了LLVM作为本编译器的中端代码。选择LLVM作为中端代码有诸多好处，比如课程网站有详细的教程可以参考，课程组提供评测机检验正确性，省去了自己设计四元式的时间，<del>还有往届学长的思路可以参考</del>。并且LLVM本身的代码结构也和mips比较相近，就拿我本人而言，在生成了LLVM以后，只花了半个礼拜就顺利通过了mips的测评。下面开始介绍一些相关设计。</p>
+<h3 id="6-1-架构"><a href="#6-1-架构" class="headerlink" title="6.1 架构"></a>6.1 架构</h3><h4 id="6-1-1-总体思路"><a href="#6-1-1-总体思路" class="headerlink" title="6.1.1 总体思路"></a>6.1.1 总体思路</h4><p>中端代码的总体架构参考教程介绍，<code>Module</code>-&gt;<code>Function</code>-&gt;<code>Basic Block</code>-&gt;<code>Instruction</code>。遍历语法分析阶段产生的语法树，自顶向下建立一个中端代码树，如果语法分析阶段建立的语法树有序且正确的话，中端代码生成阶段再建立一个中端语法书应该是不难的。此处还需特别说明一下，中端代码所用到的符号表即为语法分析阶段所建立的符号表，并没有针对LLVM新建一张，而是在之前的符号表上进行增量开发，但后端代码生成需要有一张自己的符号表。</p>
+<p>中端代码必须要对符号表进行一些必要的修改，举个例子来说：</p>
+<div class="highlight-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span> b = a;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, b);</span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> a = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>对于上述代码，如果依据我们此前的符号表，b的正确输出应该是1，但实际上会被输出成2，因为我们的符号表找一个<code>symbol</code>是自底向上查找的，且不会考虑<code>symbol</code>出现的顺序，符号表在最底层找到了a，那么就会把最底层的a返回。所以我们在遍历符号表的时候必须要考虑symbol出现的顺序，可以对符号表作如下修改：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Symbol</span> &#123;</span><br><span class="line">    <span class="comment">// 记录总的symbol的数量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">SymbolCnt</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 为每个symbol设置一个id，即出现的顺序，id = SymbolCnt++</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SymbolTable</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> Symbol <span class="title function_">findSymbolByOrder</span><span class="params">(String token, <span class="type">int</span> targetId)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>在<code>SymbolTable</code>中提供按顺序查找<code>symbol</code>的方法，传入<code>targetId</code>，即当前处理的<code>symbol</code>的id，判断<code>symbol</code>的token相等的同时还要判断查找出来的<code>symbol</code>的id要小于<code>targetId</code>，两个条件都满足才能说明找到了正确的<code>symbol</code>。</p>
+<p>此外，对于每个中端代码成分，都提供<code>toLlvm方法</code>，返回一个字符串，可以输出LLVM代码。</p>
+<h3 id="6-1-2-Value"><a href="#6-1-2-Value" class="headerlink" title="6.1.2 Value"></a>6.1.2 Value</h3><p><code>Value</code>是LLVM中非常重要的一个概念，LLVM中几乎所有的结构都可以认为是一个<code>Value</code>，所以对于<code>Value</code>的设计是非常重要的。经过笔者本人惨痛的教训，经过几轮缝缝补补，终于得出了最终版的<code>Value</code>，需要记录的信息如下所示：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 1. i32</span></span><br><span class="line"><span class="comment">     * 2. i32*</span></span><br><span class="line"><span class="comment">     * 3. i32**             函数传参传过来的一维数组</span></span><br><span class="line"><span class="comment">     * 4. [n x i32]*</span></span><br><span class="line"><span class="comment">     * 5. [m x [n x i32]]*  正常声明的二维数组</span></span><br><span class="line"><span class="comment">     * 6. [n x i32]**       函数传参传过来二维数组</span></span><br><span class="line"><span class="comment">     * 7. i1</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">varType</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">row</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">col</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 需要提供三种构造方法 */</span></span><br><span class="line">    <span class="comment">// 普通变量</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Value</span><span class="params">(String name, <span class="type">int</span> varType)</span></span><br><span class="line">    <span class="comment">// 一维数组</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Value</span><span class="params">(String name, <span class="type">int</span> varType, <span class="type">int</span> col)</span></span><br><span class="line">    <span class="comment">// 二维数组</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Value</span><span class="params">(String name, <span class="type">int</span> varType, <span class="type">int</span> row, <span class="type">int</span> col)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>其中最重要的是<code>Value</code>的类型，教程中并没有地方显式的说明，需要自己总结。经总结后，一共有以下七种类型：</p>
+<ol>
+<li><strong>i32</strong>：整数类型</li>
+<li>__i32*__：整数类型的地址</li>
+<li>__i32**__：函数传参传过来的一维数组</li>
+<li>__[n x i32]*__：正常声明的一维数组</li>
+<li>__[m x [n x i32]]*__：正常声明的二维数组</li>
+<li>__[n x i32]**__：函数传参传过来二维数组</li>
+<li>__i1__：条件变量</li>
+</ol>
+<h3 id="6-1-3-IrBuilder"><a href="#6-1-3-IrBuilder" class="headerlink" title="6.1.3 IrBuilder"></a>6.1.3 IrBuilder</h3><p>作用类似语法分析阶段里的Parser，提供以下方法：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 最上层的build方法，按全局变量、函数、基本块、指令的顺序依次调用各成分的build方法</span></span><br><span class="line"><span class="keyword">public</span> IrModule <span class="title function_">build</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建全局变量的中间代码</span></span><br><span class="line"><span class="keyword">public</span> IrGlobalVar <span class="title function_">buildGlobalVar</span><span class="params">(Def globalDef)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建函数的中间代码</span></span><br><span class="line"><span class="keyword">public</span> IrFunction <span class="title function_">buildFunction</span><span class="params">(FuncDef funcDef)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建主函数的中间代码</span></span><br><span class="line"><span class="keyword">public</span> IrFunction <span class="title function_">buildMainFunction</span><span class="params">(MainFuncDef mainFuncDef)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建基本块的中间代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">buildBasicBlock</span><span class="params">(String label)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建指令的中间代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">buildInstruction</span><span class="params">(BlockItem blockItem)</span></span><br></pre></td></tr></table></figure></div>
+<p>具体到不同的语法成分，还需要单独的提供转化成LLVM的方法，此处不多赘述。</p>
+<h3 id="6-1-4-IrComponents"><a href="#6-1-4-IrComponents" class="headerlink" title="6.1.4 IrComponents"></a>6.1.4 IrComponents</h3><h4 id="6-1-4-1-IrGlobalVar"><a href="#6-1-4-1-IrGlobalVar" class="headerlink" title="6.1.4.1 IrGlobalVar"></a>6.1.4.1 IrGlobalVar</h4><p>IrGlobalVar指的是LLVM里的全局变量，需要记录以下信息：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">IrGlobalVar</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> type;       <span class="comment">// 0: 普通变量，1：一维数组，2：二维数组</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String token;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> isConst;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> dim1;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> dim2;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">hasInitialValue</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">private</span> InitialVal initialVal;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolTable symbolTable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h4 id="6-1-4-2-IrFunction"><a href="#6-1-4-2-IrFunction" class="headerlink" title="6.1.4.2 IrFunction"></a>6.1.4.2 IrFunction</h4><p><code>IrFunction</code>指的是LLVM里的Function部分，根据LLVM里一切皆<code>Value</code>的原则，我们让<code>IrFunction</code>继承<code>Value</code>，需要记录以下信息：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">IrFunction</span> <span class="keyword">extends</span> <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String funcName;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> funcType;       <span class="comment">// 0: void, 1: int</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Value&gt; params;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;BasicBlock&gt; basicBlocks;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h4 id="6-1-4-3-BasicBlock"><a href="#6-1-4-3-BasicBlock" class="headerlink" title="6.1.4.3 BasicBlock"></a>6.1.4.3 BasicBlock</h4><p>依旧是让<code>BasicBlock</code>继承Value，需要记录以下信息：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BasicBlock</span> <span class="keyword">extends</span> <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String label;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Instruction&gt; instructions;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h4 id="6-1-4-4-IrInstructions"><a href="#6-1-4-4-IrInstructions" class="headerlink" title="6.1.4.4 IrInstructions"></a>6.1.4.4 IrInstructions</h4><p>对于每一种<code>Instruction</code>，都让其继承<code>Value</code>，具体的属性设置完全依照教程中提供的指令集，值得一提的是，<strong>指令的属性能用Value表示的一定不要用String</strong>，因为指令归根到底也是一个<code>Value</code>，<code>String</code>能表示的信息非常有限，我们对于任何一个指令，当这条指令被当作<code>Value</code>看待时，可能不止要知道指令的名字，也要知道类型等其他信息。这个时候我们需要让指令的<code>Result</code>代表整条指令的<code>Value</code>，所以需要重写<code>Value</code>中的一些方法</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getVarType</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().getVarType();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">typeToLlvm</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().typeToLlvm();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getRow</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().getRow();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCol</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().getCol();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h2 id="6-2-实现难点"><a href="#6-2-实现难点" class="headerlink" title="6.2 实现难点"></a>6.2 实现难点</h2><h3 id="6-2-1-跳转标签"><a href="#6-2-1-跳转标签" class="headerlink" title="6.2.1 跳转标签"></a>6.2.1 跳转标签</h3><p>在<code>If</code>和<code>For</code>语句中要用到大量的跳转指令，但跳转的标签很有可能是不确定的，就比如分支语句中，至少要设置两个标签，一个是进入分支的标签，另一个if结束的标签，但是我们并不知道是否会有else的标签，所有就不能提前开好这些标签。</p>
+<p>这里我们可以运用java中引用的一个特性，即java中对象之间的赋值均为浅拷贝。我们可以将未知跳转标签的跳转指令加进一个容器中，当处理到了目标基本块的时候就把他们都回填成该基本块的标签。</p>
+<h3 id="6-2-2-GEP指令"><a href="#6-2-2-GEP指令" class="headerlink" title="6.2.2 GEP指令"></a>6.2.2 GEP指令</h3><p>我们在LLVM中操作数组时，不可避免的需要用到<code>getelementptr</code>指令，但gep指令的类型部分非常难以确定，不过好在我们在设计<code>Value</code>时已经设计好了不同种类，我们可以根据该种类判断具体是哪种情况，直接挪用即可。针对gep指令，我还特地为<code>Value</code>设计了一个类型转换的方法，即根据类型编码转化为对应的LLVM语句：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> String <span class="title function_">typeToLlvm</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> (varType) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">2</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i32*&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i32**&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">4</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;[&quot;</span> + col + <span class="string">&quot; x i32]*&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">5</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;[&quot;</span> + row + <span class="string">&quot; x [&quot;</span> + col + <span class="string">&quot; x i32]]*&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">6</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;[&quot;</span> + col + <span class="string">&quot; x i32]**&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">7</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i1&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">default</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i32&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>其次，对于函数传进来的数组，我们是不需要先加一个<code>i32 0</code>的。</p>
+<p>注意好以上两点，gep指令基本上没什么问题了。</p>
+<h2 id="七、后端代码生成"><a href="#七、后端代码生成" class="headerlink" title="七、后端代码生成"></a>七、后端代码生成</h2><p>在生成LLVM以后，生成mips代码就显得简单许多。</p>
+<h3 id="7-1-架构"><a href="#7-1-架构" class="headerlink" title="7.1 架构"></a>7.1 架构</h3><h4 id="7-1-1-整体思路"><a href="#7-1-1-整体思路" class="headerlink" title="7.1.1 整体思路"></a>7.1.1 整体思路</h4><p>因为LLVM已经为我们构建了中间代码语法树，我们从<code>Module</code>入手，自顶向下地分析即可，同样也是构建一个<code>MipsBuilder</code>用来构建后端代码。</p>
+<p>在<code>MipsBuilder</code>里，首先需要建立一个<code>HashMap</code>，存储寄存器的编号和名称的映射关系，之后即与<code>Parser</code>和<code>IrBuilder</code>类似，为<code>Function</code>、<code>BasicBlock</code>、<code>Instruction</code>分别提供build方法。</p>
+<h4 id="7-1-2-RegManager"><a href="#7-1-2-RegManager" class="headerlink" title="7.1.2 RegManager"></a>7.1.2 RegManager</h4><p>在优化之前，我的寄存器分配思路是先把能分配的都分配了，剩下的再推进内存，因此我建立了一个<code>RegManager</code>，用于管理寄存器。<br><code>RegManager</code>应当具有以下功能：</p>
+<ul>
+<li>查看一个寄存器是否被占用</li>
+<li>分配给<code>MipsBuilder</code>一个空闲的寄存器</li>
+<li>释放一个正在被占用的寄存器</li>
+</ul>
+<p>代码如下：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RegManager</span> &#123;</span><br><span class="line">    <span class="comment">// key：寄存器编号，value：是否被占用</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;Integer, Boolean&gt; regMap;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">RegManager</span><span class="params">()</span> &#123;</span><br><span class="line">        regMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        <span class="comment">//初始化时全部寄存器都为空闲</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">32</span>; i++) &#123;</span><br><span class="line">            regMap.put(i, <span class="literal">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 分配一个空闲的寄存器</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">allocTmpReg</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 判断一个寄存器是否被占用</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isUsed</span><span class="params">(<span class="type">int</span> reg)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放一个寄存器</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">unmap</span><span class="params">(<span class="type">int</span> reg)</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>在RegManager里，分配寄存器时只能分配t类和s类，如果没有空闲的寄存器就返回-1。</p>
+<h4 id="7-1-3-后端符号表"><a href="#7-1-3-后端符号表" class="headerlink" title="7.1.3 后端符号表"></a>7.1.3 后端符号表</h4><p>生成中间代码时，我们还能勉强采用之前的符号表，但是到了后端，我们就不能偷懒了，因为LLVM产生了很多中间变量，在中端时我们不用管他们，但后端不同，我们需要为其分配寄存器或者内存，需要记录寄存器编号和在内存中的相对位置，所以我们必须要新开一个符号表。</p>
+<p>对于后端的<code>Symbol</code>，我们不需要记录太多信息，只需要记录其在LLVM中的名字与寄存器编号&#x2F;在内存中的位置即可。</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MipsValue</span> &#123;</span><br><span class="line">    <span class="comment">/** 若变量存入内存，需要记录相对于base的偏移量 */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> baseReg;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> offset;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> isInReg;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> tmpReg; <span class="comment">// 如果变量在寄存器中，则记录临时的寄存器</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>后端的<code>SymbolTable</code>与前端差别不大，不多赘述</p>
+<h3 id="7-2-实现细节"><a href="#7-2-实现细节" class="headerlink" title="7.2 实现细节"></a>7.2 实现细节</h3><h4 id="7-2-1-全局变量"><a href="#7-2-1-全局变量" class="headerlink" title="7.2.1 全局变量"></a>7.2.1 全局变量</h4><p>对于全局变量的处理，我并没有采用教程中介绍的<code>.data</code>的方式，而是直接把全局变量用sw指令压在<code>$gp</code>中。<del>因为我懒得再多写一个<code>.data</code>的功能</del>。</p>
+<h4 id="7-2-2-函数调用"><a href="#7-2-2-函数调用" class="headerlink" title="7.2.2 函数调用"></a>7.2.2 函数调用</h4><p>函数调用是mips的一大难点，在我的编译器中，一旦涉及到函数调用，就需要执行如下几个步骤：</p>
+<ul>
+<li>保存<code>$ra</code>至<code>$sp</code>中，栈顶减4。</li>
+<li>将函数实参压入栈中：<ul>
+<li>小于4个参数：将参数的值赋给a系列寄存器，</li>
+<li>多于4个参数：将参数的值压进内存，并将其在内存中的位置记录在符号表中。</li>
+</ul>
+</li>
+<li>然后是至关重要的一步，要将<code>$fp</code>的值赋给<code>$v1</code>，<code>$v1</code>是一个机动寄存器。这一步的目的是，要记录下保存完参数、保存临时寄存器之前的地址，子函数可以从这里往回找参数。因为之后还要把临时寄存器存进<code>$fp</code>中，所以不在此时记录下fp的值就会导致子函数找不到形参。</li>
+<li>然后是将用到的临时寄存器保存起来，这里只存用到的t类和s类即可。这里在函数内部还要维护一个HashMap，记录下寄存器编号和内存里的地址的对应关系，方便函数调用结束后找回这些寄存的值。</li>
+<li>将<code>$fp</code>自增fpOffset</li>
+<li>将所有寄存器解除映射，子函数可以随意使用寄存器，因为已经保存过了。</li>
+<li>加入<code>Jal</code>指令。</li>
+<li><code>$sp</code>自增4，恢复<code>$ra</code></li>
+<li>恢复<code>$fp</code>，将<code>$fp</code>减去fpOffset。</li>
+<li>恢复fpOffset。</li>
+<li>恢复临时寄存器，从之前提到过的HashMap中取出寄存器的值。</li>
+<li>处理函数返回值，将<code>$v0</code>存入内存中。</li>
+</ul>
+<p>经历了上述步骤，函数调用就算处理完了。</p>
+<h4 id="7-3-3-数组处理"><a href="#7-3-3-数组处理" class="headerlink" title="7.3.3 数组处理"></a>7.3.3 数组处理</h4><p>数组处理我本来是想按照写mips的习惯，写两个宏指令来处理的，但是不知道为什么课程组不让用macro，于是只能放弃。当遇到一个LLVM中的gep指令时，有如下步骤需要做：<br><strong>一维数组</strong>：</p>
+<ul>
+<li>获取数组中括号里的值，先左移两位（乘以4），得到相对于数组基地址的偏移量。</li>
+<li>从符号表中查到该数组的基地址</li>
+<li>将基地址与偏移量相加，得到目标元素的地址。</li>
+</ul>
+<p><strong>二维数组</strong>：</p>
+<ul>
+<li>获取该数组的第二维的值dim2，用数组第一维的偏移乘以dim2</li>
+<li>用上一步得到的地址加上第二维的偏移</li>
+<li>乘以4</li>
+<li>与数组的基地址相加。</li>
+</ul>
+<h2 id="八、优化部分"><a href="#八、优化部分" class="headerlink" title="八、优化部分"></a>八、优化部分</h2><p>由于本学期数据库的截止时间与编译实验的截止时间高度重合，所以我优化部分做的不是很多，当然一方面也有自己的懒惰、保守等原因，总归确实还挺遗憾的。</p>
+<h3 id="8-1-乘除法优化"><a href="#8-1-乘除法优化" class="headerlink" title="8.1 乘除法优化"></a>8.1 乘除法优化</h3><p><strong>乘法优化</strong>：<br>先判断乘法的两个操作数有没有常数：</p>
+<ul>
+<li>有常数，判断是否是2的幂次，若是，则转变为sll，若不是，用乘法指令</li>
+<li>没有常数，用乘法指令</li>
+</ul>
+<p><strong>除法优化</strong>：<br>具体方法参见教程和往届各个大佬的博客就好，我这里就不多做赘述了，直接放上我的实现代码：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">optimizeDiv</span><span class="params">(<span class="type">int</span> targetReg, <span class="type">int</span> regOp1, <span class="type">int</span> d)</span> &#123;</span><br><span class="line">    <span class="comment">// 选择multiplier和shift部分</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> <span class="number">32</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">precision</span> <span class="operator">=</span> N - <span class="number">1</span>;      <span class="comment">//除数的大小描述，有 divisor &lt; 2^precision</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">dAbs</span> <span class="operator">=</span> Math.abs(d);         <span class="comment">//除数的绝对值</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">log</span> <span class="operator">=</span> N - Integer.numberOfLeadingZeros(dAbs - <span class="number">1</span>);</span><br><span class="line">    <span class="type">int</span> <span class="variable">shift</span> <span class="operator">=</span> log;</span><br><span class="line">    <span class="type">double</span> <span class="variable">low</span> <span class="operator">=</span> Math.floor(Math.pow(<span class="number">2</span>, N + log) / dAbs);</span><br><span class="line">    <span class="type">double</span> <span class="variable">high</span> <span class="operator">=</span> Math.floor((Math.pow(<span class="number">2</span>, N + log) </span><br><span class="line">                    + Math.pow(<span class="number">2</span>, N + log - precision)) / dAbs);</span><br><span class="line">    <span class="keyword">while</span> (Math.floor(low / <span class="number">2.0</span>) &lt; Math.floor(high / <span class="number">2.0</span>) &amp;&amp; shift &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 求shift</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">long</span> <span class="variable">m</span> <span class="operator">=</span> (<span class="type">long</span>) high;</span><br><span class="line">    <span class="keyword">if</span> (dAbs == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// 结果等于被除数</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (dAbs == Math.pow(<span class="number">2</span>, log)) &#123;      <span class="comment">// 除2的幂</span></span><br><span class="line">        <span class="comment">// 类比乘法，转化为右移指令</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (m &lt; Math.pow(<span class="number">2</span>, N - <span class="number">1</span>)) &#123;        <span class="comment">// multiplier比较小</span></span><br><span class="line">        <span class="type">Li</span> <span class="variable">li</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Li</span>(targetReg, (<span class="type">int</span>) m);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, li);</span><br><span class="line">        <span class="type">Mult</span> <span class="variable">mult</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mult</span>(targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mult);</span><br><span class="line">        <span class="type">Mfhi</span> <span class="variable">mfhi</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mfhi</span>(targetReg);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mfhi);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(targetReg, targetReg, shift);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra1);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(regOp1, regOp1, <span class="number">31</span>);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra2);</span><br><span class="line">        <span class="type">Subu</span> <span class="variable">subu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Subu</span>(targetReg, targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, subu);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">m1</span> <span class="operator">=</span> m - (<span class="type">long</span>) Math.pow(<span class="number">2</span>, N);</span><br><span class="line">        <span class="type">Li</span> <span class="variable">li</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Li</span>(targetReg, (<span class="type">int</span>) m1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, li);</span><br><span class="line">        <span class="type">Mult</span> <span class="variable">mult</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mult</span>(targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mult);</span><br><span class="line">        <span class="type">Mfhi</span> <span class="variable">mfhi</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mfhi</span>(targetReg);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mfhi);</span><br><span class="line">        <span class="type">Addu</span> <span class="variable">addu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Addu</span>(targetReg, targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, addu);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(targetReg, targetReg, shift);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra1);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(regOp1, regOp1, <span class="number">31</span>);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra2);</span><br><span class="line">        <span class="type">Subu</span> <span class="variable">subu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Subu</span>(targetReg, targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, subu);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (d &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 负数的情况</span></span><br><span class="line">        <span class="type">Subu</span> <span class="variable">subu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Subu</span>(targetReg, <span class="number">0</span>, targetReg);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, subu);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h3 id="8-2-基本块优化"><a href="#8-2-基本块优化" class="headerlink" title="8.2 基本块优化"></a>8.2 基本块优化</h3><p>mips中指令是顺序执行的，而LLVM中指令是一定要在一个基本块内执行，这就为我们带来了很多的优化空间，尤其是本人在实现LLVM中由于跳转语句的逻辑不是很清晰，带来了很多没有用的基本块和跳转语句，所以我选择这步优化是非常必要的且比较卓有成效。<br>其中基本块优化中我实现了合并基本块这部分，流程如下：</p>
+<ul>
+<li>构建两个HashMap，分别是前驱集合和后继集合，两个集合的key都是<code>BasicBlock</code>，value都是<code>ArrayList&lt;BasicBlock&gt;</code>。代表着当前的基本块的前驱和后继集合。</li>
+<li>构建基本块之间的流图。由于基本块的最后一条语句一定是一条出口语句（跳转语句或者返回语句），所以我们只需要看这个基本块最后一条语句是什么类型的语句即可，有以下这么几种情况：<ul>
+<li><code>br Label</code>，将当前基本块与Label进行双向链接，过程可类比双向链表</li>
+<li><code>br cond trueLabel, falseLabel</code>，与两个目标基本块都进行连接</li>
+<li><code>return</code>，没有后继，不用理会</li>
+</ul>
+</li>
+<li>我们合并基本块有两个基本条件，一个是当前基本块要和后继基本块相邻，另一个是该后继基本块不能有其他后继，如果满足上述两个条件，就可进行进一步的优化。</li>
+<li>合并基本块的方法就是把该基本块的最后一条语句（一定是跳转语句）删掉，把后继基本块的指令全部加到该基本块中，删除后继基本块。这就要求我们的基本块内有且只有一条跳转语句，再之前生成LLVM的时候其实我是不能保证这一点的，所以完成这次优化我也顺便删除了一些不会被执行到的死代码。</li>
+</ul>
+<h3 id="8-3-指令选择"><a href="#8-3-指令选择" class="headerlink" title="8.3 指令选择"></a>8.3 指令选择</h3><p>把所有的subiu都换成addiu，由于我本身用到的指令类型也不是很多，伪指令中有不合理展开的只有这一条，所以我就只优化了这一条代码。</p>
+<h2 id="9-总结感想"><a href="#9-总结感想" class="headerlink" title="9. 总结感想"></a>9. 总结感想</h2><p>&emsp;&emsp; 来到计算机学院以后，类似这样的总结感想已经写过三篇了，这是第四篇。每当我写总结感想的时候都比较感慨，心情也很复杂，一方面是要和自己耕耘了一个学期的代码说再见了，难免有点不舍；另一方面是经过自己一个学期的反复增删修改，代码难免有点不能看了，可算是个解脱。<br>&emsp;&emsp; 说回到编译，这一学期的编译实验还是让我收获非常丰富的。首先就是让我更加深刻的理解了编译的原理与技术，加深了我对于理论课程的理解，尤其是优化部分和理论的关联程度比较密切。看着自己的编译器能将一段C语言程序翻译成汇编代码，还是非常有成就感的。此外，抛开编译本身的内容不谈，编译应该是我人生第一次管理一个如此庞大的项目，上学期的面向对象课程虽然也用的是java完成一个个小型项目，但编译涉及的工程量显然不是OO可以比拟的。尤其是语法分析这部分，我们将其戏称为OO第一单元Pro Max，想了想其实OO第一单元的表达式计算涉及的文法相比于编译来说真的很少，递归下降也只有三个函数。当然如此大的码量，我自然是应对的有些吃力的。我之前自认为我对代码的优雅程度是有一定要求的，但面对编译庞大的工作量我也只能屈服，一个类里上千行、大量的代码重复等在OO里不符合代码规范的行为都出现在了我的编译器里。有时候在GitHub上看到的一些学长的代码真的是非常公正优雅，令我非常羡慕。<br>&emsp;&emsp; 这次编译最大的遗憾就是没能实现很多优化了吧，但确实没有办法，因为和数据库的截止时间完美重合了，这也是我对编译课的建议之一，实验的截止时间最好能和数据库岔开，即使一周也好，当然这也是我对数据库的建议。还有一个建议就是，我真诚强烈地建议编译理论课程课件中所讲的代码可以不用Pascal而是用现在主流的一些语言，毕竟编译本身就已经很难了，让我们再理解一门过时且没学过的语言更是雪上加霜。<br>&emsp;&emsp; 这里我要特别鸣谢一下杨博文同学，如果不是他的话我应该编译器会完成得更加吃力，这学期我可以说是没少叨扰他，感谢他不厌其烦地回答了我每一个愚蠢的问题。<br>&emsp;&emsp; 至此，我已经实现了自己的处理器、操作系统与编译器，并且已经可以运行由SysY文法生成的所有程序了。经过三个学期后再回首望去，看到自己的成就，虽然每一学期都没有做到很顶尖的程度，但至少也是对自己的努力感到比较欣慰的。</p>
+
+        </div>
+
+        
+            <div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+                <div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> 编译设计文档</li>
+        <li><strong>作者:</strong> jkm</li>
+        <li><strong>创建于
+                :</strong> 2024-08-18 00:42:00</li>
+        
+            <li>
+                <strong>更新于
+                    :</strong> 2024-08-24 22:50:21
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://goldenkm.github.io/2024/08/18/Compiler-Doc/
+        </li>
+        <li>
+            <strong>
+                版权声明:
+            </strong>
+            
+
+            
+                本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a> 进行许可。
+            
+        </li>
+    </ul>
+</div>
+
+            </div>
+        
+
+        
+            <ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+                
+                    <li class="tag-item mx-0.5">
+                        <a href="/tags/Java/">#Java</a>&nbsp;
+                    </li>
+                
+                    <li class="tag-item mx-0.5">
+                        <a href="/tags/Compiler/">#Compiler</a>&nbsp;
+                    </li>
+                
+                    <li class="tag-item mx-0.5">
+                        <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%96%87%E6%A1%A3/">#设计文档</a>&nbsp;
+                    </li>
+                
+            </ul>
+        
+
+        
+
+        
+            <div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+                
+                    <div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="prev"
+                        rel="prev"
+                        href="/2024/08/18/OS-Lab6-Experiment-Report/"
+                        >
+                            <span class="left arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </span>
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">OS-Lab6 实验报告</span>
+                                <span class="post-nav-item">上一篇</span>
+                            </span>
+                        </a>
+                    </div>
+                
+                
+                    <div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+                        <a class="next"
+                        rel="next"
+                        href="/2024/08/18/OS-Lab6-Challenge-Experiment-Report/"
+                        >
+                            <span class="title flex justify-center items-center">
+                                <span class="post-nav-title-item">OS-Lab6-挑战性任务 实验报告</span>
+                                <span class="post-nav-item">下一篇</span>
+                            </span>
+                            <span class="right arrow-icon flex justify-center items-center">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </span>
+                        </a>
+                    </div>
+                
+            </div>
+        
+
+
+        
+    </div>
+
+    
+        <div class="toc-content-container">
+            <div class="post-toc-wrap">
+    <div class="post-toc">
+        <div class="toc-title">此页目录</div>
+        <div class="page-title">编译设计文档</div>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#BUAA-Compiler-2023"><span class="nav-text">BUAA-Compiler-2023</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%8F%82%E8%80%83%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-text">一、参考编译器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E7%BC%96%E8%AF%91%E5%99%A8%E6%80%BB%E4%BD%93%E8%AE%BE%E8%AE%A1"><span class="nav-text">二、编译器总体设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%80%BB%E4%BD%93%E7%BB%93%E6%9E%84"><span class="nav-text">2.1 总体结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1"><span class="nav-text">2.2 接口设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E6%96%87%E4%BB%B6%E7%BB%84%E7%BB%87"><span class="nav-text">2.3 文件组织</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90%E8%AE%BE%E8%AE%A1"><span class="nav-text">三、词法分析设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E8%AF%BB%E5%85%A5%E6%96%87%E4%BB%B6"><span class="nav-text">3.1 读入文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%9E%B6%E6%9E%84"><span class="nav-text">3.2 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E7%BC%96%E7%A0%81%E5%AE%8C%E6%88%90%E4%B9%8B%E5%90%8E%E7%9A%84%E4%BF%AE%E6%94%B9"><span class="nav-text">3.3 编码完成之后的修改</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E8%AF%AD%E6%B3%95%E5%88%86%E6%9E%90"><span class="nav-text">四、语法分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E6%9E%B6%E6%9E%84"><span class="nav-text">4.1 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E7%AC%A6%E5%8F%B7%E8%A1%A8"><span class="nav-text">4.2 符号表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E9%83%A8%E5%88%86%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-text">4.3 部分实现细节</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86"><span class="nav-text">五、错误处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E9%9D%9E%E6%B3%95%E7%AC%A6%E5%8F%B7"><span class="nav-text">5.1 非法符号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%90%8D%E5%AD%97%E9%87%8D%E5%AE%9A%E4%B9%89"><span class="nav-text">5.2 名字重定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E6%9C%AA%E5%AE%9A%E4%B9%89%E7%9A%84%E5%90%8D%E5%AD%97"><span class="nav-text">5.3 未定义的名字</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E4%B8%AA%E6%95%B0%E4%B8%8D%E5%8C%B9%E9%85%8D"><span class="nav-text">5.4 函数参数个数不匹配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-5-%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8D%E5%8C%B9%E9%85%8D"><span class="nav-text">5.5 函数参数类型不匹配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-6-%E6%97%A0%E8%BF%94%E5%9B%9E%E5%80%BC%E7%9A%84%E5%87%BD%E6%95%B0%E5%AD%98%E5%9C%A8%E4%B8%8D%E5%8C%B9%E9%85%8D%E7%9A%84return%E8%AF%AD%E5%8F%A5"><span class="nav-text">5.6 无返回值的函数存在不匹配的return语句</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-7-%E6%9C%89%E8%BF%94%E5%9B%9E%E5%80%BC%E7%9A%84%E5%87%BD%E6%95%B0%E7%BC%BA%E5%B0%91return%E8%AF%AD%E5%8F%A5"><span class="nav-text">5.7 有返回值的函数缺少return语句</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-8-%E4%B8%8D%E8%83%BD%E6%94%B9%E5%8F%98%E5%B8%B8%E9%87%8F%E7%9A%84%E5%80%BC"><span class="nav-text">5.8 不能改变常量的值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-9-%E7%BC%BA%E5%B0%91%E5%88%86%E5%8F%B7"><span class="nav-text">5.9 缺少分号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-10-%E7%BC%BA%E5%B0%91%E5%8F%B3%E5%B0%8F%E6%8B%AC%E5%8F%B7"><span class="nav-text">5.10 缺少右小括号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-11-%E7%BC%BA%E5%B0%91%E5%8F%B3%E4%B8%AD%E6%8B%AC%E5%8F%B7"><span class="nav-text">5.11 缺少右中括号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-12-printf%E4%B8%AD%E6%A0%BC%E5%BC%8F%E5%AD%97%E7%AC%A6%E4%B8%8E%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%AA%E6%95%B0%E4%B8%8D%E5%8C%B9%E9%85%8D"><span class="nav-text">5.12 printf中格式字符与表达式个数不匹配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-13-%E5%9C%A8%E9%9D%9E%E5%BE%AA%E7%8E%AF%E5%9D%97%E4%B8%AD%E4%BD%BF%E7%94%A8break%E5%92%8Ccontinue%E8%AF%AD%E5%8F%A5"><span class="nav-text">5.13 在非循环块中使用break和continue语句</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E4%B8%AD%E7%AB%AF%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90"><span class="nav-text">六、中端代码生成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E6%9E%B6%E6%9E%84"><span class="nav-text">6.1 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-2-Value"><span class="nav-text">6.1.2 Value</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-3-IrBuilder"><span class="nav-text">6.1.3 IrBuilder</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-4-IrComponents"><span class="nav-text">6.1.4 IrComponents</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-2-%E5%AE%9E%E7%8E%B0%E9%9A%BE%E7%82%B9"><span class="nav-text">6.2 实现难点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-1-%E8%B7%B3%E8%BD%AC%E6%A0%87%E7%AD%BE"><span class="nav-text">6.2.1 跳转标签</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-2-GEP%E6%8C%87%E4%BB%A4"><span class="nav-text">6.2.2 GEP指令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E5%90%8E%E7%AB%AF%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90"><span class="nav-text">七、后端代码生成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E6%9E%B6%E6%9E%84"><span class="nav-text">7.1 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-text">7.2 实现细节</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%BC%98%E5%8C%96%E9%83%A8%E5%88%86"><span class="nav-text">八、优化部分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8-1-%E4%B9%98%E9%99%A4%E6%B3%95%E4%BC%98%E5%8C%96"><span class="nav-text">8.1 乘除法优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-2-%E5%9F%BA%E6%9C%AC%E5%9D%97%E4%BC%98%E5%8C%96"><span class="nav-text">8.2 基本块优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-3-%E6%8C%87%E4%BB%A4%E9%80%89%E6%8B%A9"><span class="nav-text">8.3 指令选择</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E6%80%BB%E7%BB%93%E6%84%9F%E6%83%B3"><span class="nav-text">9. 总结感想</span></a></li></ol></li></ol>
+
+    </div>
+</div>
+        </div>
+    
+</div>
+
+
+
+                
+
+            </div>
+
+            
+
+        </div>
+
+        <div class="main-content-footer">
+            <footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2022</span>
+              -
+            
+            2024&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">jkm</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共 7 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">访问人数</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">总访问量</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.6.4</a></span>
+        </div>
+        
+        
+        
+        
+        
+    </div>  
+</footer>
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="article-tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="right-bottom-tools page-aside-toggle">
+                <i class="fa-regular fa-outdent"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+    <ul class="hidden-tools-list">
+        <li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-plus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+            <i class="fa-regular fa-magnifying-glass-minus"></i>
+        </li>
+
+        <li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+            <i class="fa-regular fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+            <i class="fa-regular fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="visible-tools-list">
+        <li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+            <i class="fa-regular fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="image-viewer-container">
+    <img src="">
+</div>
+
+
+    
+        <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+          <span class="search-input-field-pre">
+            <i class="fa-solid fa-keyboard"></i>
+          </span>
+            <div class="search-input-container">
+                <input autocomplete="off"
+                       autocorrect="off"
+                       autocapitalize="off"
+                       placeholder="搜索..."
+                       spellcheck="false"
+                       type="search"
+                       class="search-input"
+                >
+            </div>
+            <span class="popup-btn-close">
+                <i class="fa-solid fa-times"></i>
+            </span>
+        </div>
+        <div id="search-result">
+            <div id="no-result">
+                <i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+</main>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/libs/Swup.min.js"></script><script src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/libs/SwupSlideTheme.min.js"></script><script src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/libs/SwupScriptsPlugin.min.js"></script><script src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/libs/SwupProgressPlugin.min.js"></script><script src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/libs/SwupScrollPlugin.min.js"></script><script src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/libs/SwupPreloadPlugin.min.js"></script>
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+
+
+<script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/tools/imageViewer.js"></script><script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/utils.js"></script><script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/main.js"></script><script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/layouts/navbarShrink.js"></script><script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/tools/scrollTopBottom.js"></script><script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/tools/lightDarkSwitch.js"></script><script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/layouts/categoryList.js"></script>
+
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/tools/localSearch.js"></script>
+
+
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/tools/codeBlock.js"></script>
+
+
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/layouts/lazyload.js"></script>
+
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/libs/Typed.min.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/plugins/typed.js"></script>
+
+
+
+
+
+
+
+
+<div class="post-scripts" data-swup-reload-script>
+    
+        <script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/tools/tocToggle.js"></script><script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/layouts/toc.js"></script><script type="module" src="https://cdn.jsdelivr.net/npm/hexo-theme-redefine@2.6.4/source/js/plugins/tabs.js"></script>
+    
+</div>
+
+
+</body>
+</html>
