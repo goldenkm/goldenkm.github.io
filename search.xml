@@ -14,344 +14,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Compiler-编译设计文档</title>
-    <url>/2024/08/18/Compiler-Doc/</url>
-    <content><![CDATA[<h1 id="BUAA-Compiler-2023"><a href="#BUAA-Compiler-2023" class="headerlink" title="BUAA-Compiler-2023"></a>BUAA-Compiler-2023</h1><hr>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>北航计算机学院2021级编译技术课设的设计文档，代码见：<a class="link"   href="https://github.com/goldenkm/BUAA-Compiler-2023-Fall" >BUAA-Compiler-2023-Fall <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
-<h2 id="一、参考编译器"><a href="#一、参考编译器" class="headerlink" title="一、参考编译器"></a>一、参考编译器</h2><p>Pascal编译器主要由词法分析、语法分析、语义分析、代码生成、优化和链接等模块组成，以下是Pascal编译器的总体结构和各个模块的功能：</p>
-<ol>
-<li><p>词法分析器：负责将源代码分解为词法单元，如标识符、关键字、运算符等。词法分析器通常使用有限自动机或正则表达式来识别词法单元，并将它们转换成内部表示形式。</p>
-<div class="highlight-container" data-rel="Pascal"><figure class="iseeu highlight pascal"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">insymbol</span>;</span>  <span class="comment">&#123;reads next symbol&#125;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">nextch</span>;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure></div>
-</li>
-<li><p>语法分析器：将词法单元转换成语法树，以便后续处理。语法分析器通常使用递归下降分析、LR分析等算法来构建语法树。</p>
-<div class="highlight-container" data-rel="Pascal"><figure class="iseeu highlight pascal"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">constdec</span>;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">typedeclaration</span>;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">variabledeclaration</span>;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure></div>
-</li>
-<li><p>语义分析器：检查语法树的语义正确性，如类型检查、作用域检查等。语义分析器将对语法树进行遍历，查找并修正语义错误。</p>
-<div class="highlight-container" data-rel="Pascal"><figure class="iseeu highlight pascal"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">errormsg</span>;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">fatal</span><span class="params">( n: integer )</span>;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure></div>
-</li>
-<li><p>代码生成器：将语法树转换为目标机器的可执行代码。代码生成器将语法树转换成目标机器的汇编或机器码。</p>
-</li>
-</ol>
-<p>在接口设计方面，Pascal编译器可能提供命令行接口或集成开发环境（IDE）界面，用于用户输入源代码并获取编译结果。用户可以通过命令行参数或IDE菜单来指定编译选项和目标平台等参数。文件组织方面，编译器通常会将中间代码或目标代码输出到特定格式的文件中，以便后续链接、优化或执行。</p>
-<p>除了Pascal编译器，我参考的更多的其实是理论课程的课件和往届学长的博客与代码，再加上与同学的交流，在此基础上完成了我的编译器。</p>
-<h2 id="二、编译器总体设计"><a href="#二、编译器总体设计" class="headerlink" title="二、编译器总体设计"></a>二、编译器总体设计</h2><h3 id="2-1-总体结构"><a href="#2-1-总体结构" class="headerlink" title="2.1 总体结构"></a>2.1 总体结构</h3><p>本编译器采用目前静态编译器最主流的三端设计：前端（Frontend）、中端（Middle）、后端（Backend）。这三端分别有如下工作：</p>
-<ul>
-<li>前端：词法分析、语法分析、错误处理、符号表的建立</li>
-<li>中端：中间代码生成（LLVM），部分代码优化</li>
-<li>后端：目标代码生成</li>
-</ul>
-<h3 id="2-2-接口设计"><a href="#2-2-接口设计" class="headerlink" title="2.2 接口设计"></a>2.2 接口设计</h3><p>上述编译阶段各自独立工作，在主类Compiler里串连在一起，其中各工作阶段之间传递信息如下所示：</p>
-<ul>
-<li><strong>词法分析 -&gt; 语法分析</strong>：Lexer产出一个<code>ArrayList&lt;Token&gt;</code>，作为Parser类的输入，其中<code>Token</code>是一个词法标志，具有类型、行号等信息。</li>
-<li><strong>语法分析 -&gt; 中间代码生成</strong>：Parser负责建立语法树，并将语法树的根节点<code>CompUnit</code>返回，作为中间代码架构器<code>IrBuilder</code>的输入。</li>
-<li><strong>中间代码生成 -&gt; 目标代码生成</strong>：<code>IrBuilder</code>在中间代码生成阶段同样建立一个树形结构，其中<code>IrModule</code>是LLVM的最上层单元，也是该树的根节点，将<code>IrModule</code>作为输入传入目标代码生成器<code>MipsBuilder</code>。</li>
-</ul>
-<p>除了以上各编译阶段之间的接口设计，在各阶段内部还设计有若干接口（Interface）以更好地实现功能，下面将依次阐述：</p>
-<ul>
-<li><strong>语法分析</strong>：<br>  依据文法，凡是具有共性的文法单元均可建立接口，从上到下依次是：<ul>
-<li>块内元素：BlockItem</li>
-<li>语句：Stmt</li>
-<li>初值：InitialValue</li>
-<li>单目表达式的组成部分：UnaryBase</li>
-</ul>
-</li>
-<li><strong>中间代码生成</strong>：<ul>
-<li>指令：Instruction</li>
-</ul>
-</li>
-<li><strong>目标代码生成</strong>：<ul>
-<li>指令：MipsInstruction</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-3-文件组织"><a href="#2-3-文件组织" class="headerlink" title="2.3 文件组织"></a>2.3 文件组织</h3><p>本编译器整体文件树如下所示：</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">├─Backend</span><br><span class="line">    ├─Instrctions</span><br><span class="line">        ├─Macro</span><br><span class="line">            └─ macro...</span><br><span class="line">        └─instructions...</span><br><span class="line">    ├─MipsSymbolManager</span><br><span class="line">        ├─MipsSymbolTable</span><br><span class="line">        ├─MipsValue</span><br><span class="line">    ├─MipsBuilder</span><br><span class="line">    ├─MipsInstrType</span><br><span class="line">    ├─MipsModule</span><br><span class="line">    └─RegManager</span><br><span class="line">├─Frontend</span><br><span class="line">    ├─Lexer</span><br><span class="line">        ├─Lexer</span><br><span class="line">        ├─Token</span><br><span class="line">    ├─Parser</span><br><span class="line">        ├─Error</span><br><span class="line">        ├─Parser</span><br><span class="line">    ├─SymbolTableManager</span><br><span class="line">        ├─FuncSymbol</span><br><span class="line">        ├─Symbol</span><br><span class="line">        ├─SymbolTable</span><br><span class="line">        ├─SymbolType</span><br><span class="line">    └─SyntaxComponents</span><br><span class="line">        └─syntax components...</span><br><span class="line">├─Middle</span><br><span class="line">    ├─IrComponents</span><br><span class="line">        └─ir components...</span><br><span class="line">    └─IrBuilder</span><br><span class="line">└─Compiler</span><br></pre></td></tr></table></figure></div>
-
-<h2 id="三、词法分析设计"><a href="#三、词法分析设计" class="headerlink" title="三、词法分析设计"></a>三、词法分析设计</h2><h3 id="3-1-读入文件"><a href="#3-1-读入文件" class="headerlink" title="3.1 读入文件"></a>3.1 读入文件</h3><p>词法分析是编译器工作的首个阶段，首先要将待编译的源文件读进编译器。经过我和同伴的交流，读入文件有两种方式，其一是一次性将程序读入编译器，这应该也是大多数人采用的方式；其二是我本人采用的由源文件逐行读入进编译器。</p>
-<p>这两种方式可以说是各有千秋，若是逐行读入程序，则每个词法单元的行号是不需要单独考虑的，不会受到字符串里<code>&#39;\n&#39;</code>的影响；但由于每一行的字符串单独处理，需要时常考虑字符串下标是否越界的情况。而若是整体读入源程序，则不需要考虑字符串下标越界的情况，但是对于换行的处理就复杂很多，要屏蔽掉注释与字符串里的<code>&#39;\n&#39;</code>。</p>
-<h3 id="3-2-架构"><a href="#3-2-架构" class="headerlink" title="3.2 架构"></a>3.2 架构</h3><h4 id="3-2-1-Token"><a href="#3-2-1-Token" class="headerlink" title="3.2.1 Token"></a>3.2.1 Token</h4><p>设计Token类来代表词法单元，记录下该token的名称、种类、行号，并对这三个属性分别提供get方法。</p>
-<h4 id="3-2-2-Lexer"><a href="#3-2-2-Lexer" class="headerlink" title="3.2.2 Lexer"></a>3.2.2 Lexer</h4><p>设计Lexer类（词法分析器），其属性有：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> String input;   <span class="comment">//输入，单行程序</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="variable">pos</span> <span class="operator">=</span> <span class="number">0</span>;    <span class="comment">//处理到了输入的哪个字符</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] keywords; <span class="comment">//关键词集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] operator; <span class="comment">//操作符集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] brackets; <span class="comment">//括号集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] punctuation; <span class="comment">//标点集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] whitespace; <span class="comment">//空白符集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Token&gt;;     <span class="comment">//解析出的token集合</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> isSingleLineComment; <span class="comment">//判断是否处于单行注释中</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> isMultilineComment; <span class="comment">//判断是否处于多行注释中</span></span><br></pre></td></tr></table></figure></div>
-<p><strong>工作流程</strong>：遍历input，判断pos位置上的字符。可以进入以下分支：关键词、标识符、数字、运算符、括号、标点符号。其中关键词与标识符的first集有重叠，可以将单词解析完以后再进行判断，其余分支的first集无重叠。整体流程参考理论课程内容。</p>
-<p><strong>方法</strong>：根据上述不同分支，提供以下方法</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> String <span class="title function_">getWord</span><span class="params">()</span>     <span class="comment">//解析一个单词</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">getNum</span><span class="params">()</span>      <span class="comment">//解析一个数字</span></span><br><span class="line"><span class="keyword">public</span> Token <span class="title function_">dealOperator</span><span class="params">(<span class="type">int</span> line)</span>     <span class="comment">//处理操作符</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">getString</span><span class="params">()</span>   <span class="comment">//解析一个字符串</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">initializeMap</span><span class="params">()</span> &#123;   <span class="comment">//初始化token与type的映射</span></span><br><span class="line">        tokenTypeMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        tokenTypeMap.put(<span class="string">&quot;Ident&quot;</span>, <span class="string">&quot;IDENFR&quot;</span>);</span><br><span class="line">        ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-
-<h3 id="3-3-编码完成之后的修改"><a href="#3-3-编码完成之后的修改" class="headerlink" title="3.3 编码完成之后的修改"></a>3.3 编码完成之后的修改</h3><p>正如同之前所说，我读入文件的方式是逐行读入，Lexer的input属性是源程序的一行，所以在逐个字符解析input的时候需要特别注意下标越界的问题，否则诸如<code>input.charAt(pos)</code>这样的代码就有可能抛出异常。</p>
-<p>以下是一个需要特别考虑的例子，这个例子在词法分析、语法分析甚至期中考试都没有遇到，但在代码生成二中耗费了我很长时间去debug。</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (a &lt;</span><br><span class="line">        b) &#123;</span><br><span class="line">    <span class="comment">// code</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-
-<h2 id="四、语法分析"><a href="#四、语法分析" class="headerlink" title="四、语法分析"></a>四、语法分析</h2><h3 id="4-1-架构"><a href="#4-1-架构" class="headerlink" title="4.1 架构"></a>4.1 架构</h3><h4 id="4-1-1-Parser"><a href="#4-1-1-Parser" class="headerlink" title="4.1.1 Parser"></a>4.1.1 Parser</h4><p><strong>属性</strong>：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Token&gt; tokens; <span class="comment">//Lexer的输出，token集合</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> pointer;    <span class="comment">//与tokens配合，判断当前处理到哪个token</span></span><br><span class="line"><span class="keyword">private</span> String curToken;    <span class="comment">//当前处理的token</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;String&gt; syntaxOutput; <span class="comment">//输出集合</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Error&gt; errorOutput; <span class="comment">//错误处理的输出</span></span><br><span class="line"><span class="comment">//两个临时集合，目的在后续会详细解释</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;String&gt; tmpOutput;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Error&gt; tmpErrorOutput;</span><br><span class="line"></span><br><span class="line"><span class="comment">//有关符号表的属性</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> HashMap&lt;Integer, SymbolTable&gt;</span><br><span class="line">                        symbolTables;   <span class="comment">//所有的符号表</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> currentTableId;     <span class="comment">//当前表的id</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> fatherTableId;      <span class="comment">//父级表的id</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> countOfTable;       <span class="comment">//符号表的数量</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//一些状态标记，有时需要跨函数判断</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> currentFuncType;  <span class="comment">//当前函数的类型，0：void，1：int</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> canBorC;        <span class="comment">// 可不可以break或continue</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> timeStop;</span><br></pre></td></tr></table></figure></div>
-<h4 id="4-1-2-SyntaxComponents-语法成分"><a href="#4-1-2-SyntaxComponents-语法成分" class="headerlink" title="4.1.2 SyntaxComponents 语法成分"></a>4.1.2 SyntaxComponents 语法成分</h4><p>文法中有很多种语法成分，一眼望去让人非常眼花缭乱，在语法分析之前我们有必要先对诸多语法成分进行分类和抽象。</p>
-<h5 id="4-1-2-1-Exp"><a href="#4-1-2-1-Exp" class="headerlink" title="4.1.2.1 Exp"></a>4.1.2.1 Exp</h5><p>各种Exp，如AddExp、MulExp等等，占据了语法成分的很大一部分，然而我们不难发现各种表达式都具有极高的相似度。例如AddExp在文法中：</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">AddExp → MulExp | AddExp (&#x27;+&#x27; | &#x27;−&#x27;) MulExp</span><br></pre></td></tr></table></figure></div>
-<p>其他表达式的解析文法类似于AddExp，并且其是左递归的，可以将其改写为：</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">AddExp → MulExp &#123;(&#x27;+&#x27; | &#x27;−&#x27;) MulExp&#125;</span><br></pre></td></tr></table></figure></div>
-<p>所以可以将所有表达式抽象为如下形式：</p>
-<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">Exp -&gt; Base &#123;(&#x27;op1&#x27; | &#x27;op2&#x27; |...) Base&#125;</span><br></pre></td></tr></table></figure></div>
-<p>故建立一个ExpTemplate类（表达式模版），如下所示：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ExpTemplate</span> &#123;</span><br><span class="line">    <span class="comment">//此表达式实际有的操作符</span></span><br><span class="line">    <span class="keyword">protected</span> ArrayList&lt;String&gt; opList;</span><br><span class="line">    <span class="comment">//构成表达式的操作数</span></span><br><span class="line">    <span class="keyword">protected</span> ArrayList&lt;ExpTemplate&gt; bases;</span><br><span class="line">    <span class="comment">//该类表达式允许有的操作符</span></span><br><span class="line">    <span class="keyword">protected</span> ArrayList&lt;String&gt; stdOpList;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ExpTemplate</span><span class="params">()</span></span><br><span class="line">    <span class="comment">//添加op之前要验证op在不在stdOpList里</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addOp</span><span class="params">(String op)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addBase</span><span class="params">(ExpTemplate base)</span></span><br><span class="line">    </span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>让所有的表达式都继承这个父类，只需要重写构造函数，在初始时就加入该类表达式应该有的操作符即可。例如：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">AddExp</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>();</span><br><span class="line">    <span class="built_in">super</span>.stdOpList.add(<span class="string">&quot;+&quot;</span>);</span><br><span class="line">    <span class="built_in">super</span>.stdOpList.add(<span class="string">&quot;-&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>如此便省去了我们许多编码的时间。</p>
-<h5 id="4-1-2-2-InitVal-初值"><a href="#4-1-2-2-InitVal-初值" class="headerlink" title="4.1.2.2 InitVal 初值"></a>4.1.2.2 InitVal 初值</h5><p>观察语法成分，ConstInitVal与InitVal除了需要判断表达式是否为常量外，没有区别，故可以建立一个接口将二者统一起来，并且后续在中间代码生成阶段需要获取初值的表达式时，也可以不用区分二者。可以建立如下接口：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">InitialVal</span> &#123;</span><br><span class="line">    Exp <span class="title function_">getExp</span><span class="params">()</span>;   <span class="comment">//普通常量</span></span><br><span class="line">    ArrayList&lt;Exp&gt; <span class="title function_">getExps</span><span class="params">()</span>;   <span class="comment">//一维数组</span></span><br><span class="line">    ArrayList&lt;ArrayList&lt;Exp&gt;&gt; <span class="title function_">getExpArrays</span><span class="params">()</span>;   <span class="comment">//二维数组</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-
-<h5 id="4-1-2-3-Def与Decl"><a href="#4-1-2-3-Def与Decl" class="headerlink" title="4.1.2.3 Def与Decl"></a>4.1.2.3 Def与Decl</h5><p>Def、ConstDef与ConstDecl也是文法中的两对成分，而他们之间除了是否是常量以外也没有任何区别，所以不用对此进行区分，只需要在属性中加入一个<code>isConst</code>即可</p>
-<h5 id="4-1-2-3-Stmt与BlockItem"><a href="#4-1-2-3-Stmt与BlockItem" class="headerlink" title="4.1.2.3 Stmt与BlockItem"></a>4.1.2.3 Stmt与BlockItem</h5><p>各种Stmt与BlockItem只需建立一个接口即可，但他们之间并没有什么方法可以抽象，但是后续中间代码生成时需要使用。</p>
-<h5 id="4-1-2-4-其他"><a href="#4-1-2-4-其他" class="headerlink" title="4.1.2.4 其他"></a>4.1.2.4 其他</h5><p>其他语法成分没有什么可以进一步抽象的，为每一个成分单独建类即可。</p>
-<h4 id="4-1-3-Error"><a href="#4-1-3-Error" class="headerlink" title="4.1.3 Error"></a>4.1.3 Error</h4><p>顾名思义，代表一个错误，为错误处理而建立的类，记录下该错误所在的行号与类型。</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Error</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> line;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">char</span> errorType;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Error</span><span class="params">(<span class="type">int</span> line, <span class="type">char</span> errorType)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getLine</span><span class="params">()</span> </span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">char</span> <span class="title function_">getErrorType</span><span class="params">()</span> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-
-<h3 id="4-2-符号表"><a href="#4-2-符号表" class="headerlink" title="4.2 符号表"></a>4.2 符号表</h3><p>如果只是单纯的建立语法树，那么符号表并非必须，但后续的中间代码生成以及错误处理部分，就需要符号表的帮助了。</p>
-<h4 id="4-2-1-Symbol"><a href="#4-2-1-Symbol" class="headerlink" title="4.2.1 Symbol"></a>4.2.1 Symbol</h4><p>有如下几种情况需要建立一个symbol：</p>
-<ul>
-<li>ConstDef</li>
-<li>Def</li>
-<li>FuncDef</li>
-</ul>
-<p>并且Symbol应当存储有以下信息（此处仅考虑错误处理时的设计，后续中端代码生成阶段还需要增量开发）：</p>
-<ul>
-<li>行号（错误处理需要输出）</li>
-<li>所在的符号表</li>
-<li>符号名称</li>
-<li>种类</li>
-<li>是否为常量</li>
-</ul>
-<p>故Symbol的属性有：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Symbol</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> line;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolTable symbolTable;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String token;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolType type;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> isConst;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>上述代码中出现的SymbolType为一枚举类，记录符号的类型，如下所示：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">SymbolType</span> &#123;</span><br><span class="line">    VAR,        <span class="comment">//普通变量</span></span><br><span class="line">    ARRAY1,     <span class="comment">//一维数组</span></span><br><span class="line">    ARRAY2,     <span class="comment">//二维数组</span></span><br><span class="line">    FUNC,       <span class="comment">//函数</span></span><br><span class="line">    ERROR       <span class="comment">//错误</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<h4 id="4-2-2-SymbolTable"><a href="#4-2-2-SymbolTable" class="headerlink" title="4.2.2 SymbolTable"></a>4.2.2 SymbolTable</h4><p>本编译器采用的符号表是树形符号表，而非理论课所讲的栈式符号表，树形符号表更适合递归下降的处理方式，故采用。</p>
-<p>首先依旧是明确什么时候需要建立一个符号表：</p>
-<ul>
-<li>程序最开始时</li>
-<li>进入到一个block时</li>
-</ul>
-<p>只有以上两点需要建立符号表。其次是符号表需要记录的信息，如下所示：</p>
-<ul>
-<li>id（符号表的标识）</li>
-<li>父表（结束一个block时要退回到父表）</li>
-<li>符号集合</li>
-</ul>
-<p>将上述分析过程转换为代码，即：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SymbolTable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolTable fatherTable;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;String, Symbol&gt; symbols;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>最后是功能分析，符号表的主要功能主要有两点：</p>
-<ul>
-<li>增加符号（如果重复添加就报b类错误）</li>
-<li>查找符号（如果本层没有就要去父表继续查找）</li>
-</ul>
-<p>转化为代码：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SymbolTable</span> &#123;</span><br><span class="line">    <span class="comment">// 属性...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addSymbol</span><span class="params">(Symbol symbol)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (symbols.containsKey(token)) &#123;</span><br><span class="line">            <span class="comment">//转错误处理</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// add symbol</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Symbol <span class="title function_">findSymbol</span><span class="params">(String token)</span> &#123;</span><br><span class="line">        <span class="comment">//从自己开始查</span></span><br><span class="line">        currentTable = <span class="built_in">this</span>;</span><br><span class="line">        <span class="keyword">while</span> (<span class="comment">/*当前表不为null*/</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (currentTable.containsSymbol(token)) &#123;</span><br><span class="line">                <span class="keyword">return</span> currentTable.getSymbol(token);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//在当前表没找到就去父表继续查</span></span><br><span class="line">            currentTable = currentTable.getFatherTable();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//没找到</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-
-<h3 id="4-3-部分实现细节"><a href="#4-3-部分实现细节" class="headerlink" title="4.3 部分实现细节"></a>4.3 部分实现细节</h3><h4 id="4-3-1-整体思路"><a href="#4-3-1-整体思路" class="headerlink" title="4.3.1 整体思路"></a>4.3.1 整体思路</h4><p>整体的实现思路是为每一条文法都建立一个方法，在方法内部不断调用<code>next()</code>方法读取下一个Token。并且各个方法之间存在着递归下降的关系，之前也提到过已经在设计部分将左递归文法改写完毕，所以不存在无法终止的现象，这一点与理论课程及其他编译器的处理类似，此处不过多赘述。以下针对一些特殊情况简要介绍一下本人的处理思路。</p>
-<h4 id="4-3-2-多产生式的处理"><a href="#4-3-2-多产生式的处理" class="headerlink" title="4.3.2 多产生式的处理"></a>4.3.2 多产生式的处理</h4><p>对于多产生式，如果是各个产生式的<code>First集</code>不存在交集的情况，只需要根据各个产生式的<code>First集</code>判断然后进入不同的分支即可，对于绝大多数的多产生式，我们都可以通过预读一个token的方法来解决。故需要实现一个<code>getNextToken()</code>方法，注意此处只能预读而不能将pointer真的增加。：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> String <span class="title function_">getNextToken</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> tokens.get(pointer + <span class="number">1</span>).getToken();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-
-<p>而对于个别情况，其产生式的<code>First集</code>是有交集的，例如：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line">Stmt → LVal <span class="string">&#x27;=&#x27;</span> Exp <span class="string">&#x27;;&#x27;</span>    <span class="comment">// FIRST=&#123;Ident&#125;</span></span><br><span class="line">| LVal <span class="string">&#x27;=&#x27;</span> <span class="string">&#x27;getint&#x27;</span><span class="string">&#x27;(&#x27;</span><span class="string">&#x27;)&#x27;</span><span class="string">&#x27;;&#x27;</span>    <span class="comment">// FIRST=&#123;Ident&#125;</span></span><br><span class="line">| [Exp] <span class="string">&#x27;;&#x27;</span>     <span class="comment">// FIRST=&#123;(,Number,Ident,+,-,!&#125;</span></span><br></pre></td></tr></table></figure></div>
-<p>本编译器处理这种情况采取的方法整体借鉴教程，但实现细节不太一样。此前提到过，我在Parser类里开了几个全局变量：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Parser</span> &#123;</span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;String&gt; tmpOutput;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Error&gt; tmpErrorOutput;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> timeStop;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>其中，<code>timeStop</code>是一个状态标记，当解析到一个标识符（上述三条产生式的<code>First集</code>的交集）时，就将timeStop置为true，意为此时模拟一种暂停的情况，是一个“试探”的过程。然后调用<code>parseExp()</code>方法，注意此时解析带来的所有语法输出不能直接加入<code>syntaxOutput</code>，应该先加入一个临时的集合中，因为如果最后发现正在解析的不是<code>Exp</code>而是<code>LVal</code>，再去删除这部分语法输出就会很麻烦，错误处理输出同理。</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">addSyntaxOutput</span><span class="params">(String s)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!timeStop) &#123;</span><br><span class="line">        syntaxOutput.add(s);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        tmpOutput.add(s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>解析完以后观察<code>curToken</code>，若是<code>&#39;;&#39;</code>，就说明是<code>[Exp] &#39;;&#39;</code>这条文法，就将临时集合里的输出加入正式结果；若是 <code>&#39;=&#39;</code>，就说明是<code>LVal &#39;=&#39; Exp &#39;;&#39;</code>或者<code>LVal &#39;=&#39; &#39;getint&#39;&#39;(&#39;&#39;)&#39;&#39;;&#39;</code>，再进行进一步判断就很简单了。</p>
-<h4 id="4-3-3-进入一个作用域的流程"><a href="#4-3-3-进入一个作用域的流程" class="headerlink" title="4.3.3 进入一个作用域的流程"></a>4.3.3 进入一个作用域的流程</h4><div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Parser</span> &#123;</span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">    <span class="comment">// 为处理符号表设计的全局变量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> currentTableId;     <span class="comment">// 当前表的id</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> fatherTableId;      <span class="comment">// 父级表的id</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> countOfTable;       <span class="comment">// 表的数量</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>进入一个作用域（block），有如下几件事需要做：</p>
-<ol>
-<li>将全局变量中的fatherTableId赋值为当前符号表的id</li>
-<li>建立属于本作用域的符号表</li>
-<li>将currentTableId赋值为新建立的表的id</li>
-<li>语法分析</li>
-<li>将currentTableId重新赋为fatherTableId</li>
-</ol>
-<h2 id="五、错误处理"><a href="#五、错误处理" class="headerlink" title="五、错误处理"></a>五、错误处理</h2><p>本编译器所有错误处理均是在语法分析过程中实现，没有将其作为一个单独的步骤。</p>
-<h3 id="5-1-非法符号"><a href="#5-1-非法符号" class="headerlink" title="5.1 非法符号"></a>5.1 非法符号</h3><ul>
-<li><strong>错误类别码</strong>：a</li>
-<li><strong>解释</strong>：格式字符串中出现非法字符报错行号为<code>FormatString</code>所在行数。</li>
-<li><strong>处理思路</strong>：在语法分析中实现，遍历到<code>printf</code>时检查一下<code>formatString</code>是否符合要求即可。只是对字符串进行处理，较为简单，不多赘述。</li>
-</ul>
-<h3 id="5-2-名字重定义"><a href="#5-2-名字重定义" class="headerlink" title="5.2 名字重定义"></a>5.2 名字重定义</h3><ul>
-<li><strong>错误类别码</strong>：b</li>
-<li><strong>解释</strong>：函数名或者变量名在当前作用域下重复定义。注意，变量一定是同一级作用域下才会判定出错，不同级作用域下，内层会覆盖外层定义。报错行号为 <code>Ident</code>所在行数。</li>
-<li><strong>处理思路</strong>：在<code>parseDef/parseConstDef</code>中实现，当定义一个新的标识符时，就要加入符号表，在加入符号表的时候检查是否重复，具体代码如4.2.2所示</li>
-</ul>
-<h3 id="5-3-未定义的名字"><a href="#5-3-未定义的名字" class="headerlink" title="5.3 未定义的名字"></a>5.3 未定义的名字</h3><ul>
-<li><strong>错误类别码</strong>：c</li>
-<li><strong>解释</strong>：使用了未定义的标识符报错行号为 <code>Ident</code> 所在行数。</li>
-<li><strong>处理思路</strong>：在语法分析中实现，如<code>4.2.2 SymbolTable</code>一节中代码所示，当我需要查找符号表时，自底向上查找，如果没有找到就说明使用了未定义的名字。</li>
-</ul>
-<h3 id="5-4-函数参数个数不匹配"><a href="#5-4-函数参数个数不匹配" class="headerlink" title="5.4 函数参数个数不匹配"></a>5.4 函数参数个数不匹配</h3><ul>
-<li><strong>错误类别码</strong>：d</li>
-<li><strong>解释</strong>：函数调用语句中，参数个数与函数定义中的参数个数不匹配。报错行号为函数调用语句的函数名所在行数。</li>
-<li><strong>处理思路</strong>：单独为函数型符号设置一个类，让其继承<code>Symbol</code>类，除了常规symbol记录的信息外，还需记录函数的类型，参数。代码如下所示：  <div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FuncSymbol</span> <span class="keyword">extends</span> <span class="title class_">Symbol</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> funcType;     <span class="comment">// 0: void, 1: int</span></span><br><span class="line">    <span class="comment">// 只存储参数的类型</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;SymbolType&gt; params; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-  由于编译器只需要校验参数的类型、个数，所以我只需要存储参数的类型即可。在调用函数时，也就是<code>parseLval()</code>这个函数中，需要解析小括号内有多少个逗号，参数的个数应该是逗号的个数+1。注意这里不能直接解析参数的个数，因为这样是要以右括号为循环终止条件的，右括号有可能缺失。</li>
-</ul>
-<h3 id="5-5-函数参数类型不匹配"><a href="#5-5-函数参数类型不匹配" class="headerlink" title="5.5 函数参数类型不匹配"></a>5.5 函数参数类型不匹配</h3><ul>
-<li><strong>错误类别码</strong>：e</li>
-<li><strong>解释</strong>：函数调用语句中，参数个数与函数定义中的参数类型不匹配。报错行号为函数调用语句的函数名所在行数。</li>
-<li><strong>处理思路</strong>：类比<code>5.5 函数参数个数不匹配</code>这一部分，只要在检查参数个数的时候再检查类型就行了。</li>
-</ul>
-<h3 id="5-6-无返回值的函数存在不匹配的return语句"><a href="#5-6-无返回值的函数存在不匹配的return语句" class="headerlink" title="5.6 无返回值的函数存在不匹配的return语句"></a>5.6 无返回值的函数存在不匹配的return语句</h3><ul>
-<li><strong>错误类别码</strong>：f</li>
-<li><strong>解释</strong>：报错行号为 ‘return’ 所在行号。</li>
-<li><strong>处理思路</strong>：如此前代码所示，在<code>Parser</code>中开一个全局变量<code>currentFuncType</code>，在<code>parseFuncDef()</code>中为<code>currentFuncType</code>赋值，如果是void就是0，是int就是1。在<code>parseReturnStmt()</code>，如果当前<code>currentFuncType</code> &#x3D; 0，并且如果return之后的token的类别是<code>Ident</code>、<code>IntCon</code>或者是<code>UnaryOp</code>，那么就需要说明存在f类错误。</li>
-</ul>
-<h3 id="5-7-有返回值的函数缺少return语句"><a href="#5-7-有返回值的函数缺少return语句" class="headerlink" title="5.7 有返回值的函数缺少return语句"></a>5.7 有返回值的函数缺少return语句</h3><ul>
-<li><strong>错误类别码</strong>：g</li>
-<li><strong>解释</strong>：只需要考虑函数末尾是否存在return语句，无需考虑数据流。报错行号为函数结尾的’}’ 所在行号。</li>
-<li><strong>处理思路</strong>：类比上一类错误，在函数解析完后，如果<code>currentFuncType</code> &#x3D; 1，并且block的最后一条语句不是return，就要报错。</li>
-</ul>
-<h3 id="5-8-不能改变常量的值"><a href="#5-8-不能改变常量的值" class="headerlink" title="5.8 不能改变常量的值"></a>5.8 不能改变常量的值</h3><ul>
-<li><strong>错误类别码</strong>：h</li>
-<li><strong>解释</strong>：<code>LVal</code>为常量时，不能对其修改。报错行号为 <code>LVal</code> 所在行号。</li>
-<li><strong>处理思路</strong>：在赋值语句与getint语句时，检查<code>LVal</code>所对应的Symbol是否是常量，如果是的话，报错。</li>
-</ul>
-<h3 id="5-9-缺少分号"><a href="#5-9-缺少分号" class="headerlink" title="5.9 缺少分号"></a>5.9 缺少分号</h3><ul>
-<li><strong>错误类别码</strong>：i</li>
-<li><strong>解释</strong>：报错行号为分号前一个非终结符所在行号。</li>
-<li><strong>处理思路</strong>：这类错误非常常见，没有什么特别好的处理办法，只能在逐个token解析时加以判断。</li>
-</ul>
-<h3 id="5-10-缺少右小括号"><a href="#5-10-缺少右小括号" class="headerlink" title="5.10 缺少右小括号"></a>5.10 缺少右小括号</h3><ul>
-<li><strong>错误类别码</strong>：j</li>
-<li><strong>解释</strong>：报错行号为右小括号前一个非终结符所在行号。</li>
-<li><strong>处理思路</strong>：在逐个token解析时加以判断。</li>
-</ul>
-<h3 id="5-11-缺少右中括号"><a href="#5-11-缺少右中括号" class="headerlink" title="5.11 缺少右中括号"></a>5.11 缺少右中括号</h3><ul>
-<li><strong>错误类别码</strong>：k</li>
-<li><strong>解释</strong>：报错行号为右中括号前一个非终结符所在行号。</li>
-<li><strong>处理思路</strong>：在逐个token解析时加以判断。</li>
-</ul>
-<h3 id="5-12-printf中格式字符与表达式个数不匹配"><a href="#5-12-printf中格式字符与表达式个数不匹配" class="headerlink" title="5.12 printf中格式字符与表达式个数不匹配"></a>5.12 printf中格式字符与表达式个数不匹配</h3><ul>
-<li><strong>错误类别码</strong>：l</li>
-<li><strong>解释</strong>：报错行号为 ‘printf’ 所在行号。</li>
-<li><strong>处理思路</strong>：类似于函数调用的实参问题，统计逗号的个数，再与<code>%d</code>的个数相比较，对不上就报错。</li>
-</ul>
-<h3 id="5-13-在非循环块中使用break和continue语句"><a href="#5-13-在非循环块中使用break和continue语句" class="headerlink" title="5.13 在非循环块中使用break和continue语句"></a>5.13 在非循环块中使用break和continue语句</h3><ul>
-<li><strong>错误类别码</strong>：m</li>
-<li><strong>解释</strong>：报错行号为 ‘break’ 与 ’continue’ 所在行号。</li>
-<li><strong>处理思路</strong>：全局变量开了一个<code>canBorC</code>，意思是判断是否可以出现<code>break</code>或<code>continue</code>。当解析到<code>if</code>语句或者<code>for</code>语句时，就将该全局变量设为真，解析结束就将其置为假。</li>
-</ul>
-<h2 id="六、中端代码生成"><a href="#六、中端代码生成" class="headerlink" title="六、中端代码生成"></a>六、中端代码生成</h2><p>综合多方面考虑，我选择了LLVM作为本编译器的中端代码。选择LLVM作为中端代码有诸多好处，比如课程网站有详细的教程可以参考，课程组提供评测机检验正确性，省去了自己设计四元式的时间，<del>还有往届学长的思路可以参考</del>。并且LLVM本身的代码结构也和mips比较相近，就拿我本人而言，在生成了LLVM以后，只花了半个礼拜就顺利通过了mips的测评。下面开始介绍一些相关设计。</p>
-<h3 id="6-1-架构"><a href="#6-1-架构" class="headerlink" title="6.1 架构"></a>6.1 架构</h3><h4 id="6-1-1-总体思路"><a href="#6-1-1-总体思路" class="headerlink" title="6.1.1 总体思路"></a>6.1.1 总体思路</h4><p>中端代码的总体架构参考教程介绍，<code>Module</code>-&gt;<code>Function</code>-&gt;<code>Basic Block</code>-&gt;<code>Instruction</code>。遍历语法分析阶段产生的语法树，自顶向下建立一个中端代码树，如果语法分析阶段建立的语法树有序且正确的话，中端代码生成阶段再建立一个中端语法书应该是不难的。此处还需特别说明一下，中端代码所用到的符号表即为语法分析阶段所建立的符号表，并没有针对LLVM新建一张，而是在之前的符号表上进行增量开发，但后端代码生成需要有一张自己的符号表。</p>
-<p>中端代码必须要对符号表进行一些必要的修改，举个例子来说：</p>
-<div class="highlight-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span> b = a;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, b);</span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> a = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>对于上述代码，如果依据我们此前的符号表，b的正确输出应该是1，但实际上会被输出成2，因为我们的符号表找一个<code>symbol</code>是自底向上查找的，且不会考虑<code>symbol</code>出现的顺序，符号表在最底层找到了a，那么就会把最底层的a返回。所以我们在遍历符号表的时候必须要考虑symbol出现的顺序，可以对符号表作如下修改：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Symbol</span> &#123;</span><br><span class="line">    <span class="comment">// 记录总的symbol的数量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">SymbolCnt</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 为每个symbol设置一个id，即出现的顺序，id = SymbolCnt++</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SymbolTable</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> Symbol <span class="title function_">findSymbolByOrder</span><span class="params">(String token, <span class="type">int</span> targetId)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>在<code>SymbolTable</code>中提供按顺序查找<code>symbol</code>的方法，传入<code>targetId</code>，即当前处理的<code>symbol</code>的id，判断<code>symbol</code>的token相等的同时还要判断查找出来的<code>symbol</code>的id要小于<code>targetId</code>，两个条件都满足才能说明找到了正确的<code>symbol</code>。</p>
-<p>此外，对于每个中端代码成分，都提供<code>toLlvm方法</code>，返回一个字符串，可以输出LLVM代码。</p>
-<h3 id="6-1-2-Value"><a href="#6-1-2-Value" class="headerlink" title="6.1.2 Value"></a>6.1.2 Value</h3><p><code>Value</code>是LLVM中非常重要的一个概念，LLVM中几乎所有的结构都可以认为是一个<code>Value</code>，所以对于<code>Value</code>的设计是非常重要的。经过笔者本人惨痛的教训，经过几轮缝缝补补，终于得出了最终版的<code>Value</code>，需要记录的信息如下所示：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 1. i32</span></span><br><span class="line"><span class="comment">     * 2. i32*</span></span><br><span class="line"><span class="comment">     * 3. i32**             函数传参传过来的一维数组</span></span><br><span class="line"><span class="comment">     * 4. [n x i32]*</span></span><br><span class="line"><span class="comment">     * 5. [m x [n x i32]]*  正常声明的二维数组</span></span><br><span class="line"><span class="comment">     * 6. [n x i32]**       函数传参传过来二维数组</span></span><br><span class="line"><span class="comment">     * 7. i1</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">varType</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">row</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">col</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 需要提供三种构造方法 */</span></span><br><span class="line">    <span class="comment">// 普通变量</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Value</span><span class="params">(String name, <span class="type">int</span> varType)</span></span><br><span class="line">    <span class="comment">// 一维数组</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Value</span><span class="params">(String name, <span class="type">int</span> varType, <span class="type">int</span> col)</span></span><br><span class="line">    <span class="comment">// 二维数组</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Value</span><span class="params">(String name, <span class="type">int</span> varType, <span class="type">int</span> row, <span class="type">int</span> col)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>其中最重要的是<code>Value</code>的类型，教程中并没有地方显式的说明，需要自己总结。经总结后，一共有以下七种类型：</p>
-<ol>
-<li><strong>i32</strong>：整数类型</li>
-<li>__i32*__：整数类型的地址</li>
-<li>__i32**__：函数传参传过来的一维数组</li>
-<li>__[n x i32]*__：正常声明的一维数组</li>
-<li>__[m x [n x i32]]*__：正常声明的二维数组</li>
-<li>__[n x i32]**__：函数传参传过来二维数组</li>
-<li>__i1__：条件变量</li>
-</ol>
-<h3 id="6-1-3-IrBuilder"><a href="#6-1-3-IrBuilder" class="headerlink" title="6.1.3 IrBuilder"></a>6.1.3 IrBuilder</h3><p>作用类似语法分析阶段里的Parser，提供以下方法：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 最上层的build方法，按全局变量、函数、基本块、指令的顺序依次调用各成分的build方法</span></span><br><span class="line"><span class="keyword">public</span> IrModule <span class="title function_">build</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建全局变量的中间代码</span></span><br><span class="line"><span class="keyword">public</span> IrGlobalVar <span class="title function_">buildGlobalVar</span><span class="params">(Def globalDef)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建函数的中间代码</span></span><br><span class="line"><span class="keyword">public</span> IrFunction <span class="title function_">buildFunction</span><span class="params">(FuncDef funcDef)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建主函数的中间代码</span></span><br><span class="line"><span class="keyword">public</span> IrFunction <span class="title function_">buildMainFunction</span><span class="params">(MainFuncDef mainFuncDef)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建基本块的中间代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">buildBasicBlock</span><span class="params">(String label)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建指令的中间代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">buildInstruction</span><span class="params">(BlockItem blockItem)</span></span><br></pre></td></tr></table></figure></div>
-<p>具体到不同的语法成分，还需要单独的提供转化成LLVM的方法，此处不多赘述。</p>
-<h3 id="6-1-4-IrComponents"><a href="#6-1-4-IrComponents" class="headerlink" title="6.1.4 IrComponents"></a>6.1.4 IrComponents</h3><h4 id="6-1-4-1-IrGlobalVar"><a href="#6-1-4-1-IrGlobalVar" class="headerlink" title="6.1.4.1 IrGlobalVar"></a>6.1.4.1 IrGlobalVar</h4><p>IrGlobalVar指的是LLVM里的全局变量，需要记录以下信息：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">IrGlobalVar</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> type;       <span class="comment">// 0: 普通变量，1：一维数组，2：二维数组</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String token;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> isConst;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> dim1;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> dim2;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">hasInitialValue</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">private</span> InitialVal initialVal;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolTable symbolTable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<h4 id="6-1-4-2-IrFunction"><a href="#6-1-4-2-IrFunction" class="headerlink" title="6.1.4.2 IrFunction"></a>6.1.4.2 IrFunction</h4><p><code>IrFunction</code>指的是LLVM里的Function部分，根据LLVM里一切皆<code>Value</code>的原则，我们让<code>IrFunction</code>继承<code>Value</code>，需要记录以下信息：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">IrFunction</span> <span class="keyword">extends</span> <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String funcName;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> funcType;       <span class="comment">// 0: void, 1: int</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Value&gt; params;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;BasicBlock&gt; basicBlocks;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<h4 id="6-1-4-3-BasicBlock"><a href="#6-1-4-3-BasicBlock" class="headerlink" title="6.1.4.3 BasicBlock"></a>6.1.4.3 BasicBlock</h4><p>依旧是让<code>BasicBlock</code>继承Value，需要记录以下信息：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BasicBlock</span> <span class="keyword">extends</span> <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String label;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Instruction&gt; instructions;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<h4 id="6-1-4-4-IrInstructions"><a href="#6-1-4-4-IrInstructions" class="headerlink" title="6.1.4.4 IrInstructions"></a>6.1.4.4 IrInstructions</h4><p>对于每一种<code>Instruction</code>，都让其继承<code>Value</code>，具体的属性设置完全依照教程中提供的指令集，值得一提的是，<strong>指令的属性能用Value表示的一定不要用String</strong>，因为指令归根到底也是一个<code>Value</code>，<code>String</code>能表示的信息非常有限，我们对于任何一个指令，当这条指令被当作<code>Value</code>看待时，可能不止要知道指令的名字，也要知道类型等其他信息。这个时候我们需要让指令的<code>Result</code>代表整条指令的<code>Value</code>，所以需要重写<code>Value</code>中的一些方法</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getVarType</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().getVarType();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">typeToLlvm</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().typeToLlvm();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getRow</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().getRow();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCol</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().getCol();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<h2 id="6-2-实现难点"><a href="#6-2-实现难点" class="headerlink" title="6.2 实现难点"></a>6.2 实现难点</h2><h3 id="6-2-1-跳转标签"><a href="#6-2-1-跳转标签" class="headerlink" title="6.2.1 跳转标签"></a>6.2.1 跳转标签</h3><p>在<code>If</code>和<code>For</code>语句中要用到大量的跳转指令，但跳转的标签很有可能是不确定的，就比如分支语句中，至少要设置两个标签，一个是进入分支的标签，另一个if结束的标签，但是我们并不知道是否会有else的标签，所有就不能提前开好这些标签。</p>
-<p>这里我们可以运用java中引用的一个特性，即java中对象之间的赋值均为浅拷贝。我们可以将未知跳转标签的跳转指令加进一个容器中，当处理到了目标基本块的时候就把他们都回填成该基本块的标签。</p>
-<h3 id="6-2-2-GEP指令"><a href="#6-2-2-GEP指令" class="headerlink" title="6.2.2 GEP指令"></a>6.2.2 GEP指令</h3><p>我们在LLVM中操作数组时，不可避免的需要用到<code>getelementptr</code>指令，但gep指令的类型部分非常难以确定，不过好在我们在设计<code>Value</code>时已经设计好了不同种类，我们可以根据该种类判断具体是哪种情况，直接挪用即可。针对gep指令，我还特地为<code>Value</code>设计了一个类型转换的方法，即根据类型编码转化为对应的LLVM语句：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> String <span class="title function_">typeToLlvm</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> (varType) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">2</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i32*&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i32**&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">4</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;[&quot;</span> + col + <span class="string">&quot; x i32]*&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">5</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;[&quot;</span> + row + <span class="string">&quot; x [&quot;</span> + col + <span class="string">&quot; x i32]]*&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">6</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;[&quot;</span> + col + <span class="string">&quot; x i32]**&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">7</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i1&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">default</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i32&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-
-<p>其次，对于函数传进来的数组，我们是不需要先加一个<code>i32 0</code>的。</p>
-<p>注意好以上两点，gep指令基本上没什么问题了。</p>
-<h2 id="七、后端代码生成"><a href="#七、后端代码生成" class="headerlink" title="七、后端代码生成"></a>七、后端代码生成</h2><p>在生成LLVM以后，生成mips代码就显得简单许多。</p>
-<h3 id="7-1-架构"><a href="#7-1-架构" class="headerlink" title="7.1 架构"></a>7.1 架构</h3><h4 id="7-1-1-整体思路"><a href="#7-1-1-整体思路" class="headerlink" title="7.1.1 整体思路"></a>7.1.1 整体思路</h4><p>因为LLVM已经为我们构建了中间代码语法树，我们从<code>Module</code>入手，自顶向下地分析即可，同样也是构建一个<code>MipsBuilder</code>用来构建后端代码。</p>
-<p>在<code>MipsBuilder</code>里，首先需要建立一个<code>HashMap</code>，存储寄存器的编号和名称的映射关系，之后即与<code>Parser</code>和<code>IrBuilder</code>类似，为<code>Function</code>、<code>BasicBlock</code>、<code>Instruction</code>分别提供build方法。</p>
-<h4 id="7-1-2-RegManager"><a href="#7-1-2-RegManager" class="headerlink" title="7.1.2 RegManager"></a>7.1.2 RegManager</h4><p>在优化之前，我的寄存器分配思路是先把能分配的都分配了，剩下的再推进内存，因此我建立了一个<code>RegManager</code>，用于管理寄存器。<br><code>RegManager</code>应当具有以下功能：</p>
-<ul>
-<li>查看一个寄存器是否被占用</li>
-<li>分配给<code>MipsBuilder</code>一个空闲的寄存器</li>
-<li>释放一个正在被占用的寄存器</li>
-</ul>
-<p>代码如下：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RegManager</span> &#123;</span><br><span class="line">    <span class="comment">// key：寄存器编号，value：是否被占用</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;Integer, Boolean&gt; regMap;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">RegManager</span><span class="params">()</span> &#123;</span><br><span class="line">        regMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        <span class="comment">//初始化时全部寄存器都为空闲</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">32</span>; i++) &#123;</span><br><span class="line">            regMap.put(i, <span class="literal">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 分配一个空闲的寄存器</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">allocTmpReg</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 判断一个寄存器是否被占用</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isUsed</span><span class="params">(<span class="type">int</span> reg)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放一个寄存器</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">unmap</span><span class="params">(<span class="type">int</span> reg)</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>在RegManager里，分配寄存器时只能分配t类和s类，如果没有空闲的寄存器就返回-1。</p>
-<h4 id="7-1-3-后端符号表"><a href="#7-1-3-后端符号表" class="headerlink" title="7.1.3 后端符号表"></a>7.1.3 后端符号表</h4><p>生成中间代码时，我们还能勉强采用之前的符号表，但是到了后端，我们就不能偷懒了，因为LLVM产生了很多中间变量，在中端时我们不用管他们，但后端不同，我们需要为其分配寄存器或者内存，需要记录寄存器编号和在内存中的相对位置，所以我们必须要新开一个符号表。</p>
-<p>对于后端的<code>Symbol</code>，我们不需要记录太多信息，只需要记录其在LLVM中的名字与寄存器编号&#x2F;在内存中的位置即可。</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MipsValue</span> &#123;</span><br><span class="line">    <span class="comment">/** 若变量存入内存，需要记录相对于base的偏移量 */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> baseReg;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> offset;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> isInReg;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> tmpReg; <span class="comment">// 如果变量在寄存器中，则记录临时的寄存器</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>后端的<code>SymbolTable</code>与前端差别不大，不多赘述</p>
-<h3 id="7-2-实现细节"><a href="#7-2-实现细节" class="headerlink" title="7.2 实现细节"></a>7.2 实现细节</h3><h4 id="7-2-1-全局变量"><a href="#7-2-1-全局变量" class="headerlink" title="7.2.1 全局变量"></a>7.2.1 全局变量</h4><p>对于全局变量的处理，我并没有采用教程中介绍的<code>.data</code>的方式，而是直接把全局变量用sw指令压在<code>$gp</code>中。<del>因为我懒得再多写一个<code>.data</code>的功能</del>。</p>
-<h4 id="7-2-2-函数调用"><a href="#7-2-2-函数调用" class="headerlink" title="7.2.2 函数调用"></a>7.2.2 函数调用</h4><p>函数调用是mips的一大难点，在我的编译器中，一旦涉及到函数调用，就需要执行如下几个步骤：</p>
-<ul>
-<li>保存<code>$ra</code>至<code>$sp</code>中，栈顶减4。</li>
-<li>将函数实参压入栈中：<ul>
-<li>小于4个参数：将参数的值赋给a系列寄存器，</li>
-<li>多于4个参数：将参数的值压进内存，并将其在内存中的位置记录在符号表中。</li>
-</ul>
-</li>
-<li>然后是至关重要的一步，要将<code>$fp</code>的值赋给<code>$v1</code>，<code>$v1</code>是一个机动寄存器。这一步的目的是，要记录下保存完参数、保存临时寄存器之前的地址，子函数可以从这里往回找参数。因为之后还要把临时寄存器存进<code>$fp</code>中，所以不在此时记录下fp的值就会导致子函数找不到形参。</li>
-<li>然后是将用到的临时寄存器保存起来，这里只存用到的t类和s类即可。这里在函数内部还要维护一个HashMap，记录下寄存器编号和内存里的地址的对应关系，方便函数调用结束后找回这些寄存的值。</li>
-<li>将<code>$fp</code>自增fpOffset</li>
-<li>将所有寄存器解除映射，子函数可以随意使用寄存器，因为已经保存过了。</li>
-<li>加入<code>Jal</code>指令。</li>
-<li><code>$sp</code>自增4，恢复<code>$ra</code></li>
-<li>恢复<code>$fp</code>，将<code>$fp</code>减去fpOffset。</li>
-<li>恢复fpOffset。</li>
-<li>恢复临时寄存器，从之前提到过的HashMap中取出寄存器的值。</li>
-<li>处理函数返回值，将<code>$v0</code>存入内存中。</li>
-</ul>
-<p>经历了上述步骤，函数调用就算处理完了。</p>
-<h4 id="7-3-3-数组处理"><a href="#7-3-3-数组处理" class="headerlink" title="7.3.3 数组处理"></a>7.3.3 数组处理</h4><p>数组处理我本来是想按照写mips的习惯，写两个宏指令来处理的，但是不知道为什么课程组不让用macro，于是只能放弃。当遇到一个LLVM中的gep指令时，有如下步骤需要做：<br><strong>一维数组</strong>：</p>
-<ul>
-<li>获取数组中括号里的值，先左移两位（乘以4），得到相对于数组基地址的偏移量。</li>
-<li>从符号表中查到该数组的基地址</li>
-<li>将基地址与偏移量相加，得到目标元素的地址。</li>
-</ul>
-<p><strong>二维数组</strong>：</p>
-<ul>
-<li>获取该数组的第二维的值dim2，用数组第一维的偏移乘以dim2</li>
-<li>用上一步得到的地址加上第二维的偏移</li>
-<li>乘以4</li>
-<li>与数组的基地址相加。</li>
-</ul>
-<h2 id="八、优化部分"><a href="#八、优化部分" class="headerlink" title="八、优化部分"></a>八、优化部分</h2><p>由于本学期数据库的截止时间与编译实验的截止时间高度重合，所以我优化部分做的不是很多，当然一方面也有自己的懒惰、保守等原因，总归确实还挺遗憾的。</p>
-<h3 id="8-1-乘除法优化"><a href="#8-1-乘除法优化" class="headerlink" title="8.1 乘除法优化"></a>8.1 乘除法优化</h3><p><strong>乘法优化</strong>：<br>先判断乘法的两个操作数有没有常数：</p>
-<ul>
-<li>有常数，判断是否是2的幂次，若是，则转变为sll，若不是，用乘法指令</li>
-<li>没有常数，用乘法指令</li>
-</ul>
-<p><strong>除法优化</strong>：<br>具体方法参见教程和往届各个大佬的博客就好，我这里就不多做赘述了，直接放上我的实现代码：</p>
-<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">optimizeDiv</span><span class="params">(<span class="type">int</span> targetReg, <span class="type">int</span> regOp1, <span class="type">int</span> d)</span> &#123;</span><br><span class="line">    <span class="comment">// 选择multiplier和shift部分</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> <span class="number">32</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">precision</span> <span class="operator">=</span> N - <span class="number">1</span>;      <span class="comment">//除数的大小描述，有 divisor &lt; 2^precision</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">dAbs</span> <span class="operator">=</span> Math.abs(d);         <span class="comment">//除数的绝对值</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">log</span> <span class="operator">=</span> N - Integer.numberOfLeadingZeros(dAbs - <span class="number">1</span>);</span><br><span class="line">    <span class="type">int</span> <span class="variable">shift</span> <span class="operator">=</span> log;</span><br><span class="line">    <span class="type">double</span> <span class="variable">low</span> <span class="operator">=</span> Math.floor(Math.pow(<span class="number">2</span>, N + log) / dAbs);</span><br><span class="line">    <span class="type">double</span> <span class="variable">high</span> <span class="operator">=</span> Math.floor((Math.pow(<span class="number">2</span>, N + log) </span><br><span class="line">                    + Math.pow(<span class="number">2</span>, N + log - precision)) / dAbs);</span><br><span class="line">    <span class="keyword">while</span> (Math.floor(low / <span class="number">2.0</span>) &lt; Math.floor(high / <span class="number">2.0</span>) &amp;&amp; shift &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 求shift</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">long</span> <span class="variable">m</span> <span class="operator">=</span> (<span class="type">long</span>) high;</span><br><span class="line">    <span class="keyword">if</span> (dAbs == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// 结果等于被除数</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (dAbs == Math.pow(<span class="number">2</span>, log)) &#123;      <span class="comment">// 除2的幂</span></span><br><span class="line">        <span class="comment">// 类比乘法，转化为右移指令</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (m &lt; Math.pow(<span class="number">2</span>, N - <span class="number">1</span>)) &#123;        <span class="comment">// multiplier比较小</span></span><br><span class="line">        <span class="type">Li</span> <span class="variable">li</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Li</span>(targetReg, (<span class="type">int</span>) m);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, li);</span><br><span class="line">        <span class="type">Mult</span> <span class="variable">mult</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mult</span>(targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mult);</span><br><span class="line">        <span class="type">Mfhi</span> <span class="variable">mfhi</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mfhi</span>(targetReg);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mfhi);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(targetReg, targetReg, shift);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra1);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(regOp1, regOp1, <span class="number">31</span>);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra2);</span><br><span class="line">        <span class="type">Subu</span> <span class="variable">subu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Subu</span>(targetReg, targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, subu);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">m1</span> <span class="operator">=</span> m - (<span class="type">long</span>) Math.pow(<span class="number">2</span>, N);</span><br><span class="line">        <span class="type">Li</span> <span class="variable">li</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Li</span>(targetReg, (<span class="type">int</span>) m1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, li);</span><br><span class="line">        <span class="type">Mult</span> <span class="variable">mult</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mult</span>(targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mult);</span><br><span class="line">        <span class="type">Mfhi</span> <span class="variable">mfhi</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mfhi</span>(targetReg);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mfhi);</span><br><span class="line">        <span class="type">Addu</span> <span class="variable">addu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Addu</span>(targetReg, targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, addu);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(targetReg, targetReg, shift);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra1);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(regOp1, regOp1, <span class="number">31</span>);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra2);</span><br><span class="line">        <span class="type">Subu</span> <span class="variable">subu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Subu</span>(targetReg, targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, subu);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (d &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 负数的情况</span></span><br><span class="line">        <span class="type">Subu</span> <span class="variable">subu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Subu</span>(targetReg, <span class="number">0</span>, targetReg);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, subu);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<h3 id="8-2-基本块优化"><a href="#8-2-基本块优化" class="headerlink" title="8.2 基本块优化"></a>8.2 基本块优化</h3><p>mips中指令是顺序执行的，而LLVM中指令是一定要在一个基本块内执行，这就为我们带来了很多的优化空间，尤其是本人在实现LLVM中由于跳转语句的逻辑不是很清晰，带来了很多没有用的基本块和跳转语句，所以我选择这步优化是非常必要的且比较卓有成效。<br>其中基本块优化中我实现了合并基本块这部分，流程如下：</p>
-<ul>
-<li>构建两个HashMap，分别是前驱集合和后继集合，两个集合的key都是<code>BasicBlock</code>，value都是<code>ArrayList&lt;BasicBlock&gt;</code>。代表着当前的基本块的前驱和后继集合。</li>
-<li>构建基本块之间的流图。由于基本块的最后一条语句一定是一条出口语句（跳转语句或者返回语句），所以我们只需要看这个基本块最后一条语句是什么类型的语句即可，有以下这么几种情况：<ul>
-<li><code>br Label</code>，将当前基本块与Label进行双向链接，过程可类比双向链表</li>
-<li><code>br cond trueLabel, falseLabel</code>，与两个目标基本块都进行连接</li>
-<li><code>return</code>，没有后继，不用理会</li>
-</ul>
-</li>
-<li>我们合并基本块有两个基本条件，一个是当前基本块要和后继基本块相邻，另一个是该后继基本块不能有其他后继，如果满足上述两个条件，就可进行进一步的优化。</li>
-<li>合并基本块的方法就是把该基本块的最后一条语句（一定是跳转语句）删掉，把后继基本块的指令全部加到该基本块中，删除后继基本块。这就要求我们的基本块内有且只有一条跳转语句，再之前生成LLVM的时候其实我是不能保证这一点的，所以完成这次优化我也顺便删除了一些不会被执行到的死代码。</li>
-</ul>
-<h3 id="8-3-指令选择"><a href="#8-3-指令选择" class="headerlink" title="8.3 指令选择"></a>8.3 指令选择</h3><p>把所有的subiu都换成addiu，由于我本身用到的指令类型也不是很多，伪指令中有不合理展开的只有这一条，所以我就只优化了这一条代码。</p>
-<h2 id="9-总结感想"><a href="#9-总结感想" class="headerlink" title="9. 总结感想"></a>9. 总结感想</h2><p>&emsp;&emsp; 来到计算机学院以后，类似这样的总结感想已经写过三篇了，这是第四篇。每当我写总结感想的时候都比较感慨，心情也很复杂，一方面是要和自己耕耘了一个学期的代码说再见了，难免有点不舍；另一方面是经过自己一个学期的反复增删修改，代码难免有点不能看了，可算是个解脱。<br>&emsp;&emsp; 说回到编译，这一学期的编译实验还是让我收获非常丰富的。首先就是让我更加深刻的理解了编译的原理与技术，加深了我对于理论课程的理解，尤其是优化部分和理论的关联程度比较密切。看着自己的编译器能将一段C语言程序翻译成汇编代码，还是非常有成就感的。此外，抛开编译本身的内容不谈，编译应该是我人生第一次管理一个如此庞大的项目，上学期的面向对象课程虽然也用的是java完成一个个小型项目，但编译涉及的工程量显然不是OO可以比拟的。尤其是语法分析这部分，我们将其戏称为OO第一单元Pro Max，想了想其实OO第一单元的表达式计算涉及的文法相比于编译来说真的很少，递归下降也只有三个函数。当然如此大的码量，我自然是应对的有些吃力的。我之前自认为我对代码的优雅程度是有一定要求的，但面对编译庞大的工作量我也只能屈服，一个类里上千行、大量的代码重复等在OO里不符合代码规范的行为都出现在了我的编译器里。有时候在GitHub上看到的一些学长的代码真的是非常公正优雅，令我非常羡慕。<br>&emsp;&emsp; 这次编译最大的遗憾就是没能实现很多优化了吧，但确实没有办法，因为和数据库的截止时间完美重合了，这也是我对编译课的建议之一，实验的截止时间最好能和数据库岔开，即使一周也好，当然这也是我对数据库的建议。还有一个建议就是，我真诚强烈地建议编译理论课程课件中所讲的代码可以不用Pascal而是用现在主流的一些语言，毕竟编译本身就已经很难了，让我们再理解一门过时且没学过的语言更是雪上加霜。<br>&emsp;&emsp; 这里我要特别鸣谢一下杨博文同学，如果不是他的话我应该编译器会完成得更加吃力，这学期我可以说是没少叨扰他，感谢他不厌其烦地回答了我每一个愚蠢的问题。<br>&emsp;&emsp; 至此，我已经实现了自己的处理器、操作系统与编译器，并且已经可以运行由SysY文法生成的所有程序了。经过三个学期后再回首望去，看到自己的成就，虽然每一学期都没有做到很顶尖的程度，但至少也是对自己的努力感到比较欣慰的。</p>
-]]></content>
-      <categories>
-        <category>专业课</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>Compiler</tag>
-        <tag>设计文档</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>算法期末总结</title>
     <url>/2024/08/24/Algorithm-Summary/</url>
     <content><![CDATA[<h1 id="算法期末复习"><a href="#算法期末复习" class="headerlink" title="算法期末复习"></a>算法期末复习</h1><hr>
@@ -917,133 +579,6 @@
       </tags>
   </entry>
   <entry>
-    <title>超详细的雅思机考全流程</title>
-    <url>/2024/10/04/Ielts-Test-Experience/</url>
-    <content><![CDATA[<h1 id="超详细的雅思机考全流程贴"><a href="#超详细的雅思机考全流程贴" class="headerlink" title="超详细的雅思机考全流程贴"></a>超详细的雅思机考全流程贴</h1><hr>
-<h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1. 前言"></a>1. 前言</h2><p>写这篇帖子的目的是为了记录一下雅思的机考全流程。雅思毕竟还是非常贵的，平时也很少有能模考的机会，小红书上的帖子感觉也都不是很详细（甚至还看到了很多误导向的内容）。所以想记录一下，希望能帮助我的朋友们少踩一些坑。<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/ielts-test-experience/2.jpg"
-                     
-                ></p>
-<h2 id="2-机考报名"><a href="#2-机考报名" class="headerlink" title="2. 机考报名"></a>2. 机考报名</h2><h4 id="关于考试时间："><a href="#关于考试时间：" class="headerlink" title="关于考试时间："></a>关于考试时间：</h4><ul>
-<li><p>雅思的机考报名还是比较宽松的，视个人情况而定，据说是提前三天报都来得及。但我个人是<strong>提前两周</strong>报的，并且我也强烈推荐大家提前两周左右报名，理由如下：</p>
-<ul>
-<li>一个是提前一点报可以让你比较自由的选考场（考场还是比较重要的）</li>
-<li>再一个是提前一点给自己一个ddl，容易产生一种紧迫感，尤其是对于我这种重度焦虑选手，如果迟迟定不下来时间就会一直觉得没准备好而拖延。</li>
-<li>大概在觉得剑雅刷的差不多了就可以报名两周之后的了。对于自学选手，听力跟阅读练再多也就那样，写作跟口语加一块两周差不多。<br>&emsp;</li>
-</ul>
-</li>
-<li><p>机考与纸笔不同，<strong>口语与笔试是在一天集中考完的</strong>。其中笔试可以选择上午或者下午考，笔试若选在了上午那么口语就在下午，反之同理。</p>
-<p>笔试时间随个人喜好来就完事了，<strong>但一定要选一个你脑子比较清楚的时段</strong>。我个人推荐经常熬夜的选手选择下午笔试:</p>
-<ul>
-<li>上午的口语可以选择的时段很丰富，最晚可以选到十一点多，相当于你能睡到九、十点钟再出发去考试；</li>
-<li>对我来说，口语真是压力最大的一科，考完口语感觉瞬间释放了不少，下午的笔试也没那么紧张了。</li>
-</ul>
-</li>
-</ul>
-<p>&emsp;</p>
-<ul>
-<li><strong>需要注意的是：</strong><ul>
-<li>口语的实际考试时间不一定是你报名时选择的时间，需要等打印完准考证后再进行二次确认！（这条是在小红书上看的，我个人是没遇到这种情况的，可能是我报名的比较早吧）</li>
-<li>考试日期若与法定节假日联系起来可能会影响出分时间。例如我是在国庆节前考的，本应三天左右出分，结果等了一礼拜。着急要成绩的可以考虑这点。</li>
-</ul>
-</li>
-</ul>
-<h4 id="关于考场："><a href="#关于考场：" class="headerlink" title="关于考场："></a>关于考场：</h4><ul>
-<li>首先是我的考场的一些基本信息：<ul>
-<li>地点：首都师范大学考场（科原大厦A座）</li>
-<li>考试时间：9.29（上午口语、下午笔试）<br>&emsp;</li>
-</ul>
-</li>
-<li>考场评价：推荐，小红书五星考点名不虚传。<ul>
-<li>工作人员态度比较和善。全程说的都是中文，除了笔试开考前宣读考试须知会用英文，但实际上她念完了会再用中文强调一遍。</li>
-<li>考场环境非常好。在小红书上看了吐槽北理考场的帖子，吐槽的点包括耳机漏音、候考室小、耳塞不隔音等等。上述问题在首师大考点均未出现，在考听力时，首师大的耳机是完全不漏音的，并且耳塞巨隔音，完全听不见别人的声音，让我在笔试的时候能全神贯注于考试。</li>
-<li>考场的键盘是偏老式一点的机械键盘，鼠标不太好用，没有鼠标垫，但整体而言鼠标扮演的角色不是很重要。</li>
-<li>最大的缺点在于空调开的很晚，写到阅读了才开空调，之前非常热，我出了好几身汗，不过可能是由于我考的时间处于夏秋交替的季节，要是夏天或冬天应该没这个问题。<br>&emsp;</li>
-</ul>
-</li>
-<li><strong>如何选考场</strong>：建议多刷小红书。</li>
-</ul>
-<h2 id="3-考试流程"><a href="#3-考试流程" class="headerlink" title="3. 考试流程"></a>3. 考试流程</h2><h2 id="4-真题回忆"><a href="#4-真题回忆" class="headerlink" title="4. 真题回忆"></a>4. 真题回忆</h2>]]></content>
-      <categories>
-        <category>记录</category>
-      </categories>
-      <tags>
-        <tag>留学</tag>
-        <tag>上岸</tag>
-        <tag>IELTS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>OS-Lab6 实验报告</title>
-    <url>/2024/08/18/OS-Lab6-Experiment-Report/</url>
-    <content><![CDATA[<h1 id="Lab6实验报告"><a href="#Lab6实验报告" class="headerlink" title="Lab6实验报告"></a>Lab6实验报告</h1><h2 id="一、思考题"><a href="#一、思考题" class="headerlink" title="一、思考题"></a>一、思考题</h2><h3 id="Thinking6-1"><a href="#Thinking6-1" class="headerlink" title="Thinking6.1"></a>Thinking6.1</h3><p><strong>Q：示例代码中，父进程操作管道的写端，子进程操作管道的读端。如果现在想 让父进程作为“读者”，代码应当如何修改？</strong></p>
-<div class="highlight-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> fildes[<span class="number">2</span>];</span><br><span class="line"><span class="type">char</span> buf[<span class="number">100</span>]; <span class="type">int</span> status;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;</span><br><span class="line">    status = pipe(fildes);</span><br><span class="line"><span class="keyword">if</span> (status == <span class="number">-1</span> ) &#123; <span class="built_in">printf</span>(<span class="string">&quot;error\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">switch</span> (fork()) &#123; </span><br><span class="line">    <span class="keyword">case</span> <span class="number">-1</span>:</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span>: <span class="comment">/* 子进程 - 作为管道的写者 */</span> </span><br><span class="line">        close(fildes[<span class="number">0</span>]);</span><br><span class="line">        write(fildes[<span class="number">1</span>], <span class="string">&quot;Hello world\n&quot;</span>, <span class="number">12</span>); </span><br><span class="line">        close(fildes[<span class="number">1</span>]);</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_SUCCESS);</span><br><span class="line">    <span class="keyword">default</span>: <span class="comment">/* 父进程 - 作为管道的读者 */</span> </span><br><span class="line">        close(fildes[<span class="number">1</span>]);</span><br><span class="line">        read(fildes[<span class="number">0</span>], buf, <span class="number">100</span>); </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;father-process read:%s&quot;</span>,buf); </span><br><span class="line">        close(fildes[<span class="number">0</span>]); </span><br><span class="line">        <span class="built_in">exit</span>(EXIT_SUCCESS);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-<p>修改后的代码如上图所示</p>
-<h3 id="Thinking6-2"><a href="#Thinking6-2" class="headerlink" title="Thinking6.2"></a>Thinking6.2</h3><p><strong>Q：上面这种不同步修改 pp_ref 而导致的进程竞争问题在 user&#x2F;lib&#x2F;fd.c 中 的 dup 函数中也存在。请结合代码模仿上述情景，分析一下我们的 dup 函数中为什么会出 现预想之外的情况?</strong><br><strong>A：</strong> dup函数的作用是将一个文件描述符复制给另一个，以此实现文件的复制。dup函数的实现步骤是先将newfd所在的虚拟页映射到oldfd所在的物理页，再将newfd的数据所在的虚拟页映射到oldfd的数据所在的物理页。</p>
-<div class="highlight-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 子进程</span></span><br><span class="line">    read(p[<span class="number">0</span>], buf, <span class="keyword">sizeof</span>(buf));</span><br><span class="line"><span class="comment">// 父进程    </span></span><br><span class="line">    dup(p[<span class="number">0</span>], newfd);</span><br><span class="line">    write(p[<span class="number">1</span>], <span class="string">&quot;Hello&quot;</span>, <span class="number">5</span>);</span><br></pre></td></tr></table></figure></div>
-<p>在以上示例中，子进程先进行，若read之前发生中断，切换到父进程，若此时dup和write之间发生中断，父进程执行完dup以后没来得及往管道里写东西。切换回子进程，执行read函数，发现pageref(p[0]) &#x3D;&#x3D; pageref(pipe) &#x3D;&#x3D; 2，误认为通道关闭，发生了错误。</p>
-<h3 id="Thinking6-3"><a href="#Thinking6-3" class="headerlink" title="Thinking6.3"></a>Thinking6.3</h3><p><strong>Q：阅读上述材料并思考:为什么系统调用一定是原子操作呢?如果你觉得不是 所有的系统调用都是原子操作，请给出反例。希望能结合相关代码进行分析说明。</strong><br><strong>A：</strong> 在mos的实现中，我没有找到关闭中断的代码，但是进入内核态确实是需要关闭中断的，想必应该是交给硬件实现了，既然关闭了中断那么就必然是原子操作。但是沃天宇老师也说过，系统调用未必都是原子操作。在mos以外的操作系统中应该还有别的方式打断系统调用。<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6/1.jpeg"
-                      alt="1"
-                ></p>
-<h3 id="Thinking6-4"><a href="#Thinking6-4" class="headerlink" title="Thinking6.4"></a>Thinking6.4</h3><p><strong>Q：仔细阅读上面这段话，并思考下列问题<br>• 按照上述说法控制pipe_close中fd和pipeunmap的顺序，是否可以解决上述场<br>    景的进程竞争问题?给出你的分析过程。<br>• 我们只分析了close时的情形，在fd.c中有一个dup函数，用于复制文件描述符。 试想，如果要复制的文件描述符指向一个管道，那么是否会出现与 close 类似的问 题?请模仿上述材料写写你的理解。</strong><br><strong>A：</strong></p>
-<ul>
-<li>可以解决。因为本来pageref(p[0])就要小于pageref(pipe)，所以先解除p[0]的映射就会让pageref(p[0])更小，也就更加保证了不会出现pageref(p[0]) &#x3D;&#x3D; pageref(pipe)的情况。</li>
-<li>会。dup与close类似，在dup中永远有pageref(pipe) &gt; pageref(p[0])，若先映射fd再映射pipe，同样会导致pageref(pipe) &#x3D;&#x3D; pageref(p[0])，会被误以为管道关闭，与close类似，我们同样也可以通过调换代码顺序的情况避免上述问题。先映射pipe，再映射fd，可以避免二者相等。</li>
-</ul>
-<h3 id="Thinking6-5"><a href="#Thinking6-5" class="headerlink" title="Thinking6.5"></a>Thinking6.5</h3><p><strong>Q：思考以下三个问题。<br>• 认真回看 Lab5 文件系统相关代码，弄清打开文件的过程。<br>• 回顾 Lab1 与 Lab3，思考如何读取并加载 ELF 文件。<br>• 在Lab1中我们介绍了datatextbss段及它们的含义，data段存放初始化过的全局变量，bss 段存放未初始化的全局变量。关于 memsize 和 filesize ，我们在 Note 1.3.4中也解释了它们的含义与特点。关于 Note 1.3.4，注意其中关于“bss 段并不在文件中占数据”表述的含义。回顾 Lab3 并思考:elf_load_seg() 和 load_icode_mapper() 函数是如何确保加载 ELF 文件时，bss 段数据被正确加载进虚拟内存空间。bss 段 在 ELF 中并不占空间，但 ELF 加载进内存后，bss 段的数据占据了空间，并且初始值都是 0。请回顾 elf_load_seg() 和 load_icode_mapper() 的实现，思考这一点是如何实现的?</strong><br><strong>A：</strong></p>
-<ul>
-<li>前两问指导书已经给出解答，此处不过多赘述</li>
-<li>在lib&#x2F;elfloader.c里，可以找到对应的映射函数，我们读到filesz和memsz，若memsz大于filesz，就在最后补上相应的0。如下图所示。<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6/5.png"
-                      alt="5"
-                ></li>
-</ul>
-<h3 id="Thinking6-6"><a href="#Thinking6-6" class="headerlink" title="Thinking6.6"></a>Thinking6.6</h3><p><strong>Q：通过阅读代码空白段的注释我们知道，将标准输入或输出定向到文件，需要 我们将其 dup 到 0 或 1 号文件描述符(fd)。那么问题来了:在哪步，0 和 1 被“安排”为 标准输入和标准输出?请分析代码执行流程，给出答案。</strong><br><strong>A：</strong><br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6/2.png"
-                      alt="2"
-                ><br>在user&#x2F;init.c中，设置了标准输入输出。</p>
-<h3 id="Thinking6-7"><a href="#Thinking6-7" class="headerlink" title="Thinking6.7"></a>Thinking6.7</h3><p><strong>Q：在shell 中执行的命令分为内置命令和外部命令。在执行内置命令时 shell 不 需要 fork 一个子 shell，如 Linux 系统中的 cd 命令。在执行外部命令时 shell 需要 fork 一个子 shell，然后子 shell 去执行这条命令。<br>据此判断，在 MOS 中我们用到的 shell 命令是内置命令还是外部命令?请思考为什么 Linux 的 cd 命令是内部命令而不是外部命令?</strong><br><strong>A：</strong></p>
-<ul>
-<li>我们的mos中用到的shell命令是外部命令，因为每次我们执行一个命令都要fork出一个新进程，这个子shell再调用spawn函数执行命令。</li>
-<li>linux的内部命令包含在shell程序里面，内部命令不需要使用子进程来执行，它们已经和shell编译成一体，作为shell工具的组成部分存在。内部命令包含一些比较简单的linux系统命令。而cd命令操作简单，并且执行次数非常多，把它放进shell程序里，而不是靠创建子进程执行，可以大大提高系统的效率。</li>
-</ul>
-<h3 id="Thinking6-8"><a href="#Thinking6-8" class="headerlink" title="Thinking6.8"></a>Thinking6.8</h3><p><strong>Q：在你的 shell 中输入命令 ls.b | cat.b &gt; motd。<br>• 请问你可以在你的 shell 中观察到几次 spawn ?分别对应哪个进程?<br>• 请问你可以在你的 shell 中观察到几次进程销毁?分别对应哪个进程?</strong><br><strong>A：</strong></p>
-<ul>
-<li>shell中执行了两次spawn，分别对应ls和cat。</li>
-<li>同样，shell执行了两次进程销毁，分别对应ls和cat。</li>
-</ul>
-<h2 id="二、实验难点"><a href="#二、实验难点" class="headerlink" title="二、实验难点"></a>二、实验难点</h2><p>1、实现管道的读，例如下示代码。<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6/3.png"
-                      alt="3"
-                ><br>2、理解管道之间由于进程切换导致的竞争与同步问题。<br>3、综合运用之前lab的知识，如spawn就运用了lab3的elf_load_seg函数，如下图所示。<br>此外，理解spawn的流程也是个难点。<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6/4.png"
-                      alt="4"
-                ></p>
-<h2 id="三、实验感想"><a href="#三、实验感想" class="headerlink" title="三、实验感想"></a>三、实验感想</h2><p>&emsp;&emsp;本次实验需要填的代码不是很多，但很考验综合运用能力，尤其是运用了很多关于elf的知识，较为复杂，有点像一个期末的综合考核。而且这次需要阅读的代码量依旧很大，还是花费了我很多时间的。<br>&emsp;&emsp;但是最后看到自己实现的mos可以完成一些基本的指令时还是很有成就感的，依旧是收获满满的一个lab！</p>
-]]></content>
-      <categories>
-        <category>专业课</category>
-      </categories>
-      <tags>
-        <tag>C</tag>
-        <tag>OS</tag>
-        <tag>实验报告</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>OS-Lab6-挑战性任务 实验报告</title>
     <url>/2024/08/18/OS-Lab6-Challenge-Experiment-Report/</url>
     <content><![CDATA[<h1 id="Lab6挑战性任务实验报告"><a href="#Lab6挑战性任务实验报告" class="headerlink" title="Lab6挑战性任务实验报告"></a>Lab6挑战性任务实验报告</h1><p>具体代码见: <a class="link"   href="https://github.com/goldenkm/BUAA-OS-2023-Spring" >BUAA-OS-2023-Spring <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
@@ -1185,6 +720,197 @@
         <tag>C</tag>
         <tag>OS</tag>
         <tag>实验报告</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>OS-Lab6 实验报告</title>
+    <url>/2024/08/18/OS-Lab6-Experiment-Report/</url>
+    <content><![CDATA[<h1 id="Lab6实验报告"><a href="#Lab6实验报告" class="headerlink" title="Lab6实验报告"></a>Lab6实验报告</h1><h2 id="一、思考题"><a href="#一、思考题" class="headerlink" title="一、思考题"></a>一、思考题</h2><h3 id="Thinking6-1"><a href="#Thinking6-1" class="headerlink" title="Thinking6.1"></a>Thinking6.1</h3><p><strong>Q：示例代码中，父进程操作管道的写端，子进程操作管道的读端。如果现在想 让父进程作为“读者”，代码应当如何修改？</strong></p>
+<div class="highlight-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> fildes[<span class="number">2</span>];</span><br><span class="line"><span class="type">char</span> buf[<span class="number">100</span>]; <span class="type">int</span> status;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;</span><br><span class="line">    status = pipe(fildes);</span><br><span class="line"><span class="keyword">if</span> (status == <span class="number">-1</span> ) &#123; <span class="built_in">printf</span>(<span class="string">&quot;error\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">switch</span> (fork()) &#123; </span><br><span class="line">    <span class="keyword">case</span> <span class="number">-1</span>:</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span>: <span class="comment">/* 子进程 - 作为管道的写者 */</span> </span><br><span class="line">        close(fildes[<span class="number">0</span>]);</span><br><span class="line">        write(fildes[<span class="number">1</span>], <span class="string">&quot;Hello world\n&quot;</span>, <span class="number">12</span>); </span><br><span class="line">        close(fildes[<span class="number">1</span>]);</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_SUCCESS);</span><br><span class="line">    <span class="keyword">default</span>: <span class="comment">/* 父进程 - 作为管道的读者 */</span> </span><br><span class="line">        close(fildes[<span class="number">1</span>]);</span><br><span class="line">        read(fildes[<span class="number">0</span>], buf, <span class="number">100</span>); </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;father-process read:%s&quot;</span>,buf); </span><br><span class="line">        close(fildes[<span class="number">0</span>]); </span><br><span class="line">        <span class="built_in">exit</span>(EXIT_SUCCESS);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>修改后的代码如上图所示</p>
+<h3 id="Thinking6-2"><a href="#Thinking6-2" class="headerlink" title="Thinking6.2"></a>Thinking6.2</h3><p><strong>Q：上面这种不同步修改 pp_ref 而导致的进程竞争问题在 user&#x2F;lib&#x2F;fd.c 中 的 dup 函数中也存在。请结合代码模仿上述情景，分析一下我们的 dup 函数中为什么会出 现预想之外的情况?</strong><br><strong>A：</strong> dup函数的作用是将一个文件描述符复制给另一个，以此实现文件的复制。dup函数的实现步骤是先将newfd所在的虚拟页映射到oldfd所在的物理页，再将newfd的数据所在的虚拟页映射到oldfd的数据所在的物理页。</p>
+<div class="highlight-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 子进程</span></span><br><span class="line">    read(p[<span class="number">0</span>], buf, <span class="keyword">sizeof</span>(buf));</span><br><span class="line"><span class="comment">// 父进程    </span></span><br><span class="line">    dup(p[<span class="number">0</span>], newfd);</span><br><span class="line">    write(p[<span class="number">1</span>], <span class="string">&quot;Hello&quot;</span>, <span class="number">5</span>);</span><br></pre></td></tr></table></figure></div>
+<p>在以上示例中，子进程先进行，若read之前发生中断，切换到父进程，若此时dup和write之间发生中断，父进程执行完dup以后没来得及往管道里写东西。切换回子进程，执行read函数，发现pageref(p[0]) &#x3D;&#x3D; pageref(pipe) &#x3D;&#x3D; 2，误认为通道关闭，发生了错误。</p>
+<h3 id="Thinking6-3"><a href="#Thinking6-3" class="headerlink" title="Thinking6.3"></a>Thinking6.3</h3><p><strong>Q：阅读上述材料并思考:为什么系统调用一定是原子操作呢?如果你觉得不是 所有的系统调用都是原子操作，请给出反例。希望能结合相关代码进行分析说明。</strong><br><strong>A：</strong> 在mos的实现中，我没有找到关闭中断的代码，但是进入内核态确实是需要关闭中断的，想必应该是交给硬件实现了，既然关闭了中断那么就必然是原子操作。但是沃天宇老师也说过，系统调用未必都是原子操作。在mos以外的操作系统中应该还有别的方式打断系统调用。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6/1.jpeg"
+                      alt="1"
+                ></p>
+<h3 id="Thinking6-4"><a href="#Thinking6-4" class="headerlink" title="Thinking6.4"></a>Thinking6.4</h3><p><strong>Q：仔细阅读上面这段话，并思考下列问题<br>• 按照上述说法控制pipe_close中fd和pipeunmap的顺序，是否可以解决上述场<br>    景的进程竞争问题?给出你的分析过程。<br>• 我们只分析了close时的情形，在fd.c中有一个dup函数，用于复制文件描述符。 试想，如果要复制的文件描述符指向一个管道，那么是否会出现与 close 类似的问 题?请模仿上述材料写写你的理解。</strong><br><strong>A：</strong></p>
+<ul>
+<li>可以解决。因为本来pageref(p[0])就要小于pageref(pipe)，所以先解除p[0]的映射就会让pageref(p[0])更小，也就更加保证了不会出现pageref(p[0]) &#x3D;&#x3D; pageref(pipe)的情况。</li>
+<li>会。dup与close类似，在dup中永远有pageref(pipe) &gt; pageref(p[0])，若先映射fd再映射pipe，同样会导致pageref(pipe) &#x3D;&#x3D; pageref(p[0])，会被误以为管道关闭，与close类似，我们同样也可以通过调换代码顺序的情况避免上述问题。先映射pipe，再映射fd，可以避免二者相等。</li>
+</ul>
+<h3 id="Thinking6-5"><a href="#Thinking6-5" class="headerlink" title="Thinking6.5"></a>Thinking6.5</h3><p><strong>Q：思考以下三个问题。<br>• 认真回看 Lab5 文件系统相关代码，弄清打开文件的过程。<br>• 回顾 Lab1 与 Lab3，思考如何读取并加载 ELF 文件。<br>• 在Lab1中我们介绍了datatextbss段及它们的含义，data段存放初始化过的全局变量，bss 段存放未初始化的全局变量。关于 memsize 和 filesize ，我们在 Note 1.3.4中也解释了它们的含义与特点。关于 Note 1.3.4，注意其中关于“bss 段并不在文件中占数据”表述的含义。回顾 Lab3 并思考:elf_load_seg() 和 load_icode_mapper() 函数是如何确保加载 ELF 文件时，bss 段数据被正确加载进虚拟内存空间。bss 段 在 ELF 中并不占空间，但 ELF 加载进内存后，bss 段的数据占据了空间，并且初始值都是 0。请回顾 elf_load_seg() 和 load_icode_mapper() 的实现，思考这一点是如何实现的?</strong><br><strong>A：</strong></p>
+<ul>
+<li>前两问指导书已经给出解答，此处不过多赘述</li>
+<li>在lib&#x2F;elfloader.c里，可以找到对应的映射函数，我们读到filesz和memsz，若memsz大于filesz，就在最后补上相应的0。如下图所示。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6/5.png"
+                      alt="5"
+                ></li>
+</ul>
+<h3 id="Thinking6-6"><a href="#Thinking6-6" class="headerlink" title="Thinking6.6"></a>Thinking6.6</h3><p><strong>Q：通过阅读代码空白段的注释我们知道，将标准输入或输出定向到文件，需要 我们将其 dup 到 0 或 1 号文件描述符(fd)。那么问题来了:在哪步，0 和 1 被“安排”为 标准输入和标准输出?请分析代码执行流程，给出答案。</strong><br><strong>A：</strong><br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6/2.png"
+                      alt="2"
+                ><br>在user&#x2F;init.c中，设置了标准输入输出。</p>
+<h3 id="Thinking6-7"><a href="#Thinking6-7" class="headerlink" title="Thinking6.7"></a>Thinking6.7</h3><p><strong>Q：在shell 中执行的命令分为内置命令和外部命令。在执行内置命令时 shell 不 需要 fork 一个子 shell，如 Linux 系统中的 cd 命令。在执行外部命令时 shell 需要 fork 一个子 shell，然后子 shell 去执行这条命令。<br>据此判断，在 MOS 中我们用到的 shell 命令是内置命令还是外部命令?请思考为什么 Linux 的 cd 命令是内部命令而不是外部命令?</strong><br><strong>A：</strong></p>
+<ul>
+<li>我们的mos中用到的shell命令是外部命令，因为每次我们执行一个命令都要fork出一个新进程，这个子shell再调用spawn函数执行命令。</li>
+<li>linux的内部命令包含在shell程序里面，内部命令不需要使用子进程来执行，它们已经和shell编译成一体，作为shell工具的组成部分存在。内部命令包含一些比较简单的linux系统命令。而cd命令操作简单，并且执行次数非常多，把它放进shell程序里，而不是靠创建子进程执行，可以大大提高系统的效率。</li>
+</ul>
+<h3 id="Thinking6-8"><a href="#Thinking6-8" class="headerlink" title="Thinking6.8"></a>Thinking6.8</h3><p><strong>Q：在你的 shell 中输入命令 ls.b | cat.b &gt; motd。<br>• 请问你可以在你的 shell 中观察到几次 spawn ?分别对应哪个进程?<br>• 请问你可以在你的 shell 中观察到几次进程销毁?分别对应哪个进程?</strong><br><strong>A：</strong></p>
+<ul>
+<li>shell中执行了两次spawn，分别对应ls和cat。</li>
+<li>同样，shell执行了两次进程销毁，分别对应ls和cat。</li>
+</ul>
+<h2 id="二、实验难点"><a href="#二、实验难点" class="headerlink" title="二、实验难点"></a>二、实验难点</h2><p>1、实现管道的读，例如下示代码。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6/3.png"
+                      alt="3"
+                ><br>2、理解管道之间由于进程切换导致的竞争与同步问题。<br>3、综合运用之前lab的知识，如spawn就运用了lab3的elf_load_seg函数，如下图所示。<br>此外，理解spawn的流程也是个难点。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/os-lab6/4.png"
+                      alt="4"
+                ></p>
+<h2 id="三、实验感想"><a href="#三、实验感想" class="headerlink" title="三、实验感想"></a>三、实验感想</h2><p>&emsp;&emsp;本次实验需要填的代码不是很多，但很考验综合运用能力，尤其是运用了很多关于elf的知识，较为复杂，有点像一个期末的综合考核。而且这次需要阅读的代码量依旧很大，还是花费了我很多时间的。<br>&emsp;&emsp;但是最后看到自己实现的mos可以完成一些基本的指令时还是很有成就感的，依旧是收获满满的一个lab！</p>
+]]></content>
+      <categories>
+        <category>专业课</category>
+      </categories>
+      <tags>
+        <tag>C</tag>
+        <tag>OS</tag>
+        <tag>实验报告</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>超详细的雅思机考全流程</title>
+    <url>/2024/10/04/Ielts-Test-Experience/</url>
+    <content><![CDATA[<h1 id="超详细的雅思机考全流程贴"><a href="#超详细的雅思机考全流程贴" class="headerlink" title="超详细的雅思机考全流程贴"></a>超详细的雅思机考全流程贴</h1><h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1. 前言"></a>1. 前言</h2><p>写这篇帖子的目的是为了记录一下雅思的机考全流程。雅思毕竟还是非常贵的，平时也很少有能模考的机会，小红书上的帖子感觉也都不是很详细（甚至还看到了很多误导向的内容）。所以想记录一下，希望能帮助我的朋友们少踩一些坑。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/ielts-test-experience/2.jpg"
+                     
+                ></p>
+<h2 id="2-机考报名"><a href="#2-机考报名" class="headerlink" title="2. 机考报名"></a>2. 机考报名</h2><h4 id="关于考试时间："><a href="#关于考试时间：" class="headerlink" title="关于考试时间："></a>关于考试时间：</h4><ul>
+<li><p>雅思的机考报名还是比较宽松的，视个人情况而定，据说是提前三天报都来得及。但我个人是<strong>提前两周</strong>报的，并且我也强烈推荐大家提前两周左右报名，理由如下：</p>
+<ul>
+<li>一个是提前一点报可以让你比较自由的选考场（考场还是比较重要的）</li>
+<li>再一个是提前一点给自己一个ddl，容易产生一种紧迫感，尤其是对于我这种重度焦虑选手，如果迟迟定不下来时间就会一直觉得没准备好而拖延。</li>
+<li>大概在觉得剑雅刷的差不多了就可以报名两周之后的了。对于自学选手，听力跟阅读练再多也就那样，写作跟口语加一块两周差不多。<br>&emsp;</li>
+</ul>
+</li>
+<li><p>机考与纸笔不同，<strong>口语与笔试是在一天集中考完的</strong>。其中笔试可以选择上午或者下午考，笔试若选在了上午那么口语就在下午，反之同理。</p>
+<p>笔试时间随个人喜好来就完事了，<strong>但一定要选一个你脑子比较清楚的时段</strong>。我个人推荐经常熬夜的选手选择下午笔试:</p>
+<ul>
+<li>上午的口语可以选择的时段很丰富，最晚可以选到十一点多，相当于你能睡到九、十点钟再出发去考试；</li>
+<li>对我来说，口语真是压力最大的一科，考完口语感觉瞬间释放了不少，下午的笔试也没那么紧张了。</li>
+</ul>
+</li>
+</ul>
+<p>&emsp;</p>
+<ul>
+<li><strong>需要注意的是：</strong><ul>
+<li>口语的实际考试时间不一定是你报名时选择的时间，需要等打印完准考证后再进行<strong>二次确认</strong>！（这条是在小红书上看的，我个人是没遇到这种情况的，可能是我报名的比较早吧）</li>
+<li>考试日期若与法定节假日联系起来可能会影响出分时间。例如我是在国庆节前考的，本应三天左右出分，结果等了一礼拜。着急要成绩的可以考虑这点。</li>
+</ul>
+</li>
+</ul>
+<h4 id="关于考场："><a href="#关于考场：" class="headerlink" title="关于考场："></a>关于考场：</h4><ul>
+<li>首先是我的考场的一些基本信息：<ul>
+<li>地点：首都师范大学考场（科原大厦A座）</li>
+<li>考试时间：9.29（上午口语、下午笔试）<br>&emsp;</li>
+</ul>
+</li>
+<li>考场评价：推荐，小红书五星考点名不虚传。<ul>
+<li>工作人员态度比较和善。全程说的都是中文，除了笔试开考前宣读考试须知会用英文，但实际上她念完了会再用中文强调一遍。</li>
+<li>考场环境非常好。在小红书上看了吐槽北理考场的帖子，吐槽的点包括耳机漏音、候考室小、耳塞不隔音等等。上述问题在首师大考点均未出现，在考听力时，首师大的耳机是完全不漏音的，并且耳塞巨隔音，完全听不见别人的声音，让我在笔试的时候能全神贯注于考试。</li>
+<li>考场的键盘是偏老式一点的机械键盘，鼠标不太好用，没有鼠标垫，但整体而言鼠标扮演的角色不是很重要。</li>
+<li>最大的缺点在于空调开的很晚，写到阅读了才开空调，之前非常热，我出了好几身汗，不过可能是由于我考的时间处于夏秋交替的季节，要是夏天或冬天应该没这个问题。<br>&emsp;</li>
+</ul>
+</li>
+<li><strong>如何选考场</strong>：建议多刷小红书。并且个人认为，选考场只需要考虑考场环境即可，哪个考场分高、哪个分低大部分都是玄学（除了北外北语是口口相传的口语压分，可能和都是本校生去考有关）。有一些公认的考场看法吧，仅供参考：北理环境稍差；北语北外口语压分；国贸、崇文门、首经贸和首师大风评不错。</li>
+</ul>
+<h2 id="3-考试流程"><a href="#3-考试流程" class="headerlink" title="3. 考试流程"></a>3. 考试流程</h2><p>以下流程均以上午口语+下午笔试为准</p>
+<ol>
+<li><strong>考前准备</strong>：身份证 + 准考证，别的啥也不用。在刚到的时候需要查验准考证，其余时刻均只需身份证。</li>
+<li><strong>到场时间</strong>：最晚的到场时间就是准考证上写的入场截止时间，建议比那个时间早15～20分钟到就完事了，不用太早。考场都有明显的标识，很难走错。</li>
+<li><strong>到考场后</strong>：进入候考室等待，考前十分钟安检。口语考试除了身份证和存包的钥匙不让带任何东西，笔试除了这些还能带一瓶撕了包装的矿泉水。<strong>此处与小红书说的不同</strong>，口语进场时间严格遵守准考证的时间，我看小红书上说到的早可以先进，应该是假的。</li>
+<li><strong>口语考试</strong>：<ol>
+<li>先录指纹、拍证件照，右手食指摁四次，然后去排队等考场，这一部分等待考官安排即可。排到考场之后，会有一个工作人员领着你，先不要着急进小房子，工作人员要帮你摇考官，她告诉你能进了再进。</li>
+<li>口语考场是一个小隔间，只有一张桌子、一把椅子、一台电脑，桌上摆着耳机、铅笔、p2用到的草稿纸。需要注意的是，<strong>除了p2，手要一直放在桌面上</strong>。</li>
+<li>口语考完之后，是不能自己出来的，需要摁桌面上的铃，这是考生与外界通信的唯一手段（考试过程如遇意外也摁铃）。</li>
+</ol>
+</li>
+<li><strong>笔试</strong>：<ol>
+<li>下午场的笔试需要在一点半之前抵达后考试，安检之后进到考官分配的座位。这个时候就干等着就行了，什么都不用干。</li>
+<li>所有人就位之后，工作人员会先宣读考试须知，不用听，因为她是用英文念的，她的口语水平你大概率听不懂，并且关键信息还会用中文强调。随后工作人员会发放一个小纸片，上面是每个人的登陆密码，输入登录即可。</li>
+<li>考试分为听力、阅读、写作三个部分，每个部分开始之前先看一个短片，是给你讲解每个部分都是干嘛的，看完点击【StartTest】就可以开始每部分的考试了。需要注意的是，<strong>听力全程都是可以调节音量的</strong>，小红书上说你要在考试前调解好音量，<strong>这点完全是错误的</strong>。调节音量的方式有两个，一个是耳机右边那条线上有音量条，再一个是屏幕右下角有调节音量的按钮，可以用鼠标调节。</li>
+<li>每个部分做完了千万不能按右下角的exit键，我的经验是<strong>每个部分只能等时间结束自动收卷，似乎没有主动交卷的按钮</strong>。不过提前交卷也没什么用，最后都是要等所有人做完了一起走。</li>
+<li>考试页面和雅思哥比较相似，听力会有一丢丢差别，不过问题不大。</li>
+<li>考完听力记得戴耳塞，考场环境比较嘈杂。</li>
+</ol>
+</li>
+<li><strong>考试结束</strong>：记得<strong>把铅笔拿走</strong>。出分了会发邮件，不用主动去官网查。</li>
+</ol>
+<h2 id="4-真题回忆"><a href="#4-真题回忆" class="headerlink" title="4. 真题回忆"></a>4. 真题回忆</h2><p>以下内容全部出于我的回忆，一定不齐全。</p>
+<h4 id="4-1-口语"><a href="#4-1-口语" class="headerlink" title="4.1 口语"></a>4.1 口语</h4><p><strong>Part 1</strong>：</p>
+<ol>
+<li>经典老题：work or study<ol>
+<li>工作还是学生</li>
+<li>你在哪学习（学校的位置）</li>
+<li>你认为xx大学是一个很适合学习的地方吗</li>
+<li>未来五年的学习规划</li>
+</ol>
+</li>
+<li>challenges<ol>
+<li>你认为哪个科目是最困难的</li>
+<li>你遇到困难后会求助他人吗</li>
+</ol>
+</li>
+</ol>
+<p>忘了有没有第三个了</p>
+<p><strong>Part 2：描述一个你去过的历史建筑，并且在那里你可以学到很多东西</strong></p>
+<ul>
+<li>和题库里的稍有不同，不过大差不差吧。</li>
+<li>这里需要强调一下：很多人以为P2就是让你说一段两分钟的话就完事了（包括我），但实际上不是的，我考试的时候考官明确说了p2的要求是：说两分钟，然后需要考官会根据p2的内容提出一些相关问题。<strong>所以实际上p2的部分是有即兴问题的，不是只有p3才能够根据p2展开</strong>，强烈建议在写素材时准备一些可能会问的问题，一般都是比较基础的问题。</li>
+<li>考官在我说完p2之后问了我几个问题，记忆比较模糊，不一定准：<ul>
+<li>你最喜欢的是故宫哪个部分（老白男算你狠）</li>
+</ul>
+</li>
+</ul>
+<p><strong>Part 3</strong>：<br>两部分，一部分是根据P2展开，另一部分是其他。</p>
+<ol>
+<li>你认为中国人为什么喜欢参观历史建筑？</li>
+<li>你认为实地参观历史建筑和在照片、电影里参观有什么不同？（题库没有）</li>
+<li>中国人喜欢住什么类型的房子？（我也不太清楚他想问啥，答了个apartment）</li>
+<li>中国人现在的建筑和过去有什么差别？</li>
+<li>人们在买房的时候考虑了哪些因素</li>
+</ol>
+<p><strong>总结</strong>：</p>
+<ul>
+<li>p1中规中矩，p2押中了题，p3也没啥难的，总体而言还是比较友好。</li>
+<li>一定要小心p2的即兴问题，他问你问题并不一定是你没说够时间，因为我很清楚自己一定是说够了两分钟的，并且也被打断了，很有可能你如果像我一样说了一个故宫这样烂大街的答案就会喜提考官的即兴提问。</li>
+<li>p3可以看出来大部分还是从题库里出的，我觉得如果时间充裕的话过一遍题库还是有必要的。</li>
+</ul>
+<h4 id="4-2-听力"><a href="#4-2-听力" class="headerlink" title="4.2 听力"></a>4.2 听力</h4><p><strong>Part 1</strong>：前七道no more than 2 words，后三道1 word。属实是开幕雷击了有点，考了两个不会的词caravan和snowboarding，前面根据读音拼对了，后面这个即使听到了也想不到是一个词吧。<br><strong>Part 2</strong>：前面五道是单选，后五道地图。地图有点难，而且他的方位描述很奇怪，比剑雅的难。<br><strong>Part 3</strong>：全是选择，前四道单选，后面三个双选。难度尚可。<br><strong>Part 4</strong>：都是1 word，难度还行，有一个没听见。<br>&emsp;<br><strong>总结</strong>：听力绝对是比剑雅难的，开篇就来一个no more than 2 words，我直接暗呼不妙。地图也比剑雅的要难，我大概有两个是蒙的。再说听力语速，我觉得我抽到的这几篇都是速度尚可，就是不会很快，但也确实没有剑雅那种像疯狂动物城里的树獭一样的那种语速，整体肯定是比剑雅快一些的。最难受的是剑雅会给你着重读答案的词，但真题完全没有，反而有的还像是故意给你划过去，属实是恶心人了。但是整体来讲，听力比较好懂，没有很难的词，基本跟上了是能听懂绝大部分的。有的题没听着的话是能马上就意识到没听着，不至于说一个漏了后面整个就崩了。<br>建议有时间的刷一刷剑雅之外别的材料。</p>
+<h4 id="4-3-阅读"><a href="#4-3-阅读" class="headerlink" title="4.3 阅读"></a>4.3 阅读</h4><p><strong>Part 1</strong>：常规题型，前一半填空，后一半判断。<br><strong>Part 2</strong>：开局四道匹配，然后是填空、判断。<br><strong>Part 3</strong>：前面四道选择，然后是完形（选择形式），判断<br>&emsp;<br><strong>总结</strong>：最简单的一集，不到五十分钟速通了直接。不过一个好的信号是真题的题型和剑雅是比较接近的，不会有那种连着两篇都是匹配的情况（应该吧）。</p>
+<h4 id="4-4-写作"><a href="#4-4-写作" class="headerlink" title="4.4 写作"></a>4.4 写作</h4><p><strong>小作文</strong>：表格，数据太多了，属实是给我写麻了。<br><strong>大作文</strong>：“一些人认为鼓励人们居住到城市而不是农村，有助于缓解交通问题，是否同意？“<br>&emsp;<br><strong>总结</strong>：小作文属实是写麻了，花了半小时，导致大作文没啥时间，只写了280多个词。而且大作文这题目也太弱智了，写作确实没发挥好。强烈建议<strong>先写大作文，后写小作文</strong>，并且写大作文建议先把模版搭好，再往里填内容。除此之外，老式机械键盘最好也能适应适应，考场上感觉真是不如笔记本敲得顺心。</p>
+]]></content>
+      <categories>
+        <category>记录</category>
+      </categories>
+      <tags>
+        <tag>留学</tag>
+        <tag>上岸</tag>
+        <tag>IELTS</tag>
       </tags>
   </entry>
   <entry>
@@ -1749,6 +1475,344 @@
         <tag>留学</tag>
         <tag>上岸</tag>
         <tag>IELTS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Compiler-编译设计文档</title>
+    <url>/2024/08/18/Compiler-Doc/</url>
+    <content><![CDATA[<h1 id="BUAA-Compiler-2023"><a href="#BUAA-Compiler-2023" class="headerlink" title="BUAA-Compiler-2023"></a>BUAA-Compiler-2023</h1><hr>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>北航计算机学院2021级编译技术课设的设计文档，代码见：<a class="link"   href="https://github.com/goldenkm/BUAA-Compiler-2023-Fall" >BUAA-Compiler-2023-Fall <i class="fa-regular fa-arrow-up-right-from-square fa-sm"></i></a></p>
+<h2 id="一、参考编译器"><a href="#一、参考编译器" class="headerlink" title="一、参考编译器"></a>一、参考编译器</h2><p>Pascal编译器主要由词法分析、语法分析、语义分析、代码生成、优化和链接等模块组成，以下是Pascal编译器的总体结构和各个模块的功能：</p>
+<ol>
+<li><p>词法分析器：负责将源代码分解为词法单元，如标识符、关键字、运算符等。词法分析器通常使用有限自动机或正则表达式来识别词法单元，并将它们转换成内部表示形式。</p>
+<div class="highlight-container" data-rel="Pascal"><figure class="iseeu highlight pascal"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">insymbol</span>;</span>  <span class="comment">&#123;reads next symbol&#125;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">nextch</span>;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>语法分析器：将词法单元转换成语法树，以便后续处理。语法分析器通常使用递归下降分析、LR分析等算法来构建语法树。</p>
+<div class="highlight-container" data-rel="Pascal"><figure class="iseeu highlight pascal"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">constdec</span>;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">typedeclaration</span>;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">variabledeclaration</span>;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>语义分析器：检查语法树的语义正确性，如类型检查、作用域检查等。语义分析器将对语法树进行遍历，查找并修正语义错误。</p>
+<div class="highlight-container" data-rel="Pascal"><figure class="iseeu highlight pascal"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">errormsg</span>;</span></span><br><span class="line"><span class="function"><span class="keyword">procedure</span> <span class="title">fatal</span><span class="params">( n: integer )</span>;</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p>代码生成器：将语法树转换为目标机器的可执行代码。代码生成器将语法树转换成目标机器的汇编或机器码。</p>
+</li>
+</ol>
+<p>在接口设计方面，Pascal编译器可能提供命令行接口或集成开发环境（IDE）界面，用于用户输入源代码并获取编译结果。用户可以通过命令行参数或IDE菜单来指定编译选项和目标平台等参数。文件组织方面，编译器通常会将中间代码或目标代码输出到特定格式的文件中，以便后续链接、优化或执行。</p>
+<p>除了Pascal编译器，我参考的更多的其实是理论课程的课件和往届学长的博客与代码，再加上与同学的交流，在此基础上完成了我的编译器。</p>
+<h2 id="二、编译器总体设计"><a href="#二、编译器总体设计" class="headerlink" title="二、编译器总体设计"></a>二、编译器总体设计</h2><h3 id="2-1-总体结构"><a href="#2-1-总体结构" class="headerlink" title="2.1 总体结构"></a>2.1 总体结构</h3><p>本编译器采用目前静态编译器最主流的三端设计：前端（Frontend）、中端（Middle）、后端（Backend）。这三端分别有如下工作：</p>
+<ul>
+<li>前端：词法分析、语法分析、错误处理、符号表的建立</li>
+<li>中端：中间代码生成（LLVM），部分代码优化</li>
+<li>后端：目标代码生成</li>
+</ul>
+<h3 id="2-2-接口设计"><a href="#2-2-接口设计" class="headerlink" title="2.2 接口设计"></a>2.2 接口设计</h3><p>上述编译阶段各自独立工作，在主类Compiler里串连在一起，其中各工作阶段之间传递信息如下所示：</p>
+<ul>
+<li><strong>词法分析 -&gt; 语法分析</strong>：Lexer产出一个<code>ArrayList&lt;Token&gt;</code>，作为Parser类的输入，其中<code>Token</code>是一个词法标志，具有类型、行号等信息。</li>
+<li><strong>语法分析 -&gt; 中间代码生成</strong>：Parser负责建立语法树，并将语法树的根节点<code>CompUnit</code>返回，作为中间代码架构器<code>IrBuilder</code>的输入。</li>
+<li><strong>中间代码生成 -&gt; 目标代码生成</strong>：<code>IrBuilder</code>在中间代码生成阶段同样建立一个树形结构，其中<code>IrModule</code>是LLVM的最上层单元，也是该树的根节点，将<code>IrModule</code>作为输入传入目标代码生成器<code>MipsBuilder</code>。</li>
+</ul>
+<p>除了以上各编译阶段之间的接口设计，在各阶段内部还设计有若干接口（Interface）以更好地实现功能，下面将依次阐述：</p>
+<ul>
+<li><strong>语法分析</strong>：<br>  依据文法，凡是具有共性的文法单元均可建立接口，从上到下依次是：<ul>
+<li>块内元素：BlockItem</li>
+<li>语句：Stmt</li>
+<li>初值：InitialValue</li>
+<li>单目表达式的组成部分：UnaryBase</li>
+</ul>
+</li>
+<li><strong>中间代码生成</strong>：<ul>
+<li>指令：Instruction</li>
+</ul>
+</li>
+<li><strong>目标代码生成</strong>：<ul>
+<li>指令：MipsInstruction</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-3-文件组织"><a href="#2-3-文件组织" class="headerlink" title="2.3 文件组织"></a>2.3 文件组织</h3><p>本编译器整体文件树如下所示：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">├─Backend</span><br><span class="line">    ├─Instrctions</span><br><span class="line">        ├─Macro</span><br><span class="line">            └─ macro...</span><br><span class="line">        └─instructions...</span><br><span class="line">    ├─MipsSymbolManager</span><br><span class="line">        ├─MipsSymbolTable</span><br><span class="line">        ├─MipsValue</span><br><span class="line">    ├─MipsBuilder</span><br><span class="line">    ├─MipsInstrType</span><br><span class="line">    ├─MipsModule</span><br><span class="line">    └─RegManager</span><br><span class="line">├─Frontend</span><br><span class="line">    ├─Lexer</span><br><span class="line">        ├─Lexer</span><br><span class="line">        ├─Token</span><br><span class="line">    ├─Parser</span><br><span class="line">        ├─Error</span><br><span class="line">        ├─Parser</span><br><span class="line">    ├─SymbolTableManager</span><br><span class="line">        ├─FuncSymbol</span><br><span class="line">        ├─Symbol</span><br><span class="line">        ├─SymbolTable</span><br><span class="line">        ├─SymbolType</span><br><span class="line">    └─SyntaxComponents</span><br><span class="line">        └─syntax components...</span><br><span class="line">├─Middle</span><br><span class="line">    ├─IrComponents</span><br><span class="line">        └─ir components...</span><br><span class="line">    └─IrBuilder</span><br><span class="line">└─Compiler</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="三、词法分析设计"><a href="#三、词法分析设计" class="headerlink" title="三、词法分析设计"></a>三、词法分析设计</h2><h3 id="3-1-读入文件"><a href="#3-1-读入文件" class="headerlink" title="3.1 读入文件"></a>3.1 读入文件</h3><p>词法分析是编译器工作的首个阶段，首先要将待编译的源文件读进编译器。经过我和同伴的交流，读入文件有两种方式，其一是一次性将程序读入编译器，这应该也是大多数人采用的方式；其二是我本人采用的由源文件逐行读入进编译器。</p>
+<p>这两种方式可以说是各有千秋，若是逐行读入程序，则每个词法单元的行号是不需要单独考虑的，不会受到字符串里<code>&#39;\n&#39;</code>的影响；但由于每一行的字符串单独处理，需要时常考虑字符串下标是否越界的情况。而若是整体读入源程序，则不需要考虑字符串下标越界的情况，但是对于换行的处理就复杂很多，要屏蔽掉注释与字符串里的<code>&#39;\n&#39;</code>。</p>
+<h3 id="3-2-架构"><a href="#3-2-架构" class="headerlink" title="3.2 架构"></a>3.2 架构</h3><h4 id="3-2-1-Token"><a href="#3-2-1-Token" class="headerlink" title="3.2.1 Token"></a>3.2.1 Token</h4><p>设计Token类来代表词法单元，记录下该token的名称、种类、行号，并对这三个属性分别提供get方法。</p>
+<h4 id="3-2-2-Lexer"><a href="#3-2-2-Lexer" class="headerlink" title="3.2.2 Lexer"></a>3.2.2 Lexer</h4><p>设计Lexer类（词法分析器），其属性有：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> String input;   <span class="comment">//输入，单行程序</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="variable">pos</span> <span class="operator">=</span> <span class="number">0</span>;    <span class="comment">//处理到了输入的哪个字符</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] keywords; <span class="comment">//关键词集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] operator; <span class="comment">//操作符集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] brackets; <span class="comment">//括号集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] punctuation; <span class="comment">//标点集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] whitespace; <span class="comment">//空白符集合，在初始时已确定</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Token&gt;;     <span class="comment">//解析出的token集合</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> isSingleLineComment; <span class="comment">//判断是否处于单行注释中</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> isMultilineComment; <span class="comment">//判断是否处于多行注释中</span></span><br></pre></td></tr></table></figure></div>
+<p><strong>工作流程</strong>：遍历input，判断pos位置上的字符。可以进入以下分支：关键词、标识符、数字、运算符、括号、标点符号。其中关键词与标识符的first集有重叠，可以将单词解析完以后再进行判断，其余分支的first集无重叠。整体流程参考理论课程内容。</p>
+<p><strong>方法</strong>：根据上述不同分支，提供以下方法</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> String <span class="title function_">getWord</span><span class="params">()</span>     <span class="comment">//解析一个单词</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">getNum</span><span class="params">()</span>      <span class="comment">//解析一个数字</span></span><br><span class="line"><span class="keyword">public</span> Token <span class="title function_">dealOperator</span><span class="params">(<span class="type">int</span> line)</span>     <span class="comment">//处理操作符</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">getString</span><span class="params">()</span>   <span class="comment">//解析一个字符串</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">initializeMap</span><span class="params">()</span> &#123;   <span class="comment">//初始化token与type的映射</span></span><br><span class="line">        tokenTypeMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        tokenTypeMap.put(<span class="string">&quot;Ident&quot;</span>, <span class="string">&quot;IDENFR&quot;</span>);</span><br><span class="line">        ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="3-3-编码完成之后的修改"><a href="#3-3-编码完成之后的修改" class="headerlink" title="3.3 编码完成之后的修改"></a>3.3 编码完成之后的修改</h3><p>正如同之前所说，我读入文件的方式是逐行读入，Lexer的input属性是源程序的一行，所以在逐个字符解析input的时候需要特别注意下标越界的问题，否则诸如<code>input.charAt(pos)</code>这样的代码就有可能抛出异常。</p>
+<p>以下是一个需要特别考虑的例子，这个例子在词法分析、语法分析甚至期中考试都没有遇到，但在代码生成二中耗费了我很长时间去debug。</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (a &lt;</span><br><span class="line">        b) &#123;</span><br><span class="line">    <span class="comment">// code</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="四、语法分析"><a href="#四、语法分析" class="headerlink" title="四、语法分析"></a>四、语法分析</h2><h3 id="4-1-架构"><a href="#4-1-架构" class="headerlink" title="4.1 架构"></a>4.1 架构</h3><h4 id="4-1-1-Parser"><a href="#4-1-1-Parser" class="headerlink" title="4.1.1 Parser"></a>4.1.1 Parser</h4><p><strong>属性</strong>：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Token&gt; tokens; <span class="comment">//Lexer的输出，token集合</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> pointer;    <span class="comment">//与tokens配合，判断当前处理到哪个token</span></span><br><span class="line"><span class="keyword">private</span> String curToken;    <span class="comment">//当前处理的token</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;String&gt; syntaxOutput; <span class="comment">//输出集合</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Error&gt; errorOutput; <span class="comment">//错误处理的输出</span></span><br><span class="line"><span class="comment">//两个临时集合，目的在后续会详细解释</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;String&gt; tmpOutput;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Error&gt; tmpErrorOutput;</span><br><span class="line"></span><br><span class="line"><span class="comment">//有关符号表的属性</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> HashMap&lt;Integer, SymbolTable&gt;</span><br><span class="line">                        symbolTables;   <span class="comment">//所有的符号表</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> currentTableId;     <span class="comment">//当前表的id</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> fatherTableId;      <span class="comment">//父级表的id</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> countOfTable;       <span class="comment">//符号表的数量</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//一些状态标记，有时需要跨函数判断</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> currentFuncType;  <span class="comment">//当前函数的类型，0：void，1：int</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> canBorC;        <span class="comment">// 可不可以break或continue</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> timeStop;</span><br></pre></td></tr></table></figure></div>
+<h4 id="4-1-2-SyntaxComponents-语法成分"><a href="#4-1-2-SyntaxComponents-语法成分" class="headerlink" title="4.1.2 SyntaxComponents 语法成分"></a>4.1.2 SyntaxComponents 语法成分</h4><p>文法中有很多种语法成分，一眼望去让人非常眼花缭乱，在语法分析之前我们有必要先对诸多语法成分进行分类和抽象。</p>
+<h5 id="4-1-2-1-Exp"><a href="#4-1-2-1-Exp" class="headerlink" title="4.1.2.1 Exp"></a>4.1.2.1 Exp</h5><p>各种Exp，如AddExp、MulExp等等，占据了语法成分的很大一部分，然而我们不难发现各种表达式都具有极高的相似度。例如AddExp在文法中：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">AddExp → MulExp | AddExp (&#x27;+&#x27; | &#x27;−&#x27;) MulExp</span><br></pre></td></tr></table></figure></div>
+<p>其他表达式的解析文法类似于AddExp，并且其是左递归的，可以将其改写为：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">AddExp → MulExp &#123;(&#x27;+&#x27; | &#x27;−&#x27;) MulExp&#125;</span><br></pre></td></tr></table></figure></div>
+<p>所以可以将所有表达式抽象为如下形式：</p>
+<div class="highlight-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="code"><pre><span class="line">Exp -&gt; Base &#123;(&#x27;op1&#x27; | &#x27;op2&#x27; |...) Base&#125;</span><br></pre></td></tr></table></figure></div>
+<p>故建立一个ExpTemplate类（表达式模版），如下所示：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ExpTemplate</span> &#123;</span><br><span class="line">    <span class="comment">//此表达式实际有的操作符</span></span><br><span class="line">    <span class="keyword">protected</span> ArrayList&lt;String&gt; opList;</span><br><span class="line">    <span class="comment">//构成表达式的操作数</span></span><br><span class="line">    <span class="keyword">protected</span> ArrayList&lt;ExpTemplate&gt; bases;</span><br><span class="line">    <span class="comment">//该类表达式允许有的操作符</span></span><br><span class="line">    <span class="keyword">protected</span> ArrayList&lt;String&gt; stdOpList;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ExpTemplate</span><span class="params">()</span></span><br><span class="line">    <span class="comment">//添加op之前要验证op在不在stdOpList里</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addOp</span><span class="params">(String op)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addBase</span><span class="params">(ExpTemplate base)</span></span><br><span class="line">    </span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>让所有的表达式都继承这个父类，只需要重写构造函数，在初始时就加入该类表达式应该有的操作符即可。例如：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">AddExp</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>();</span><br><span class="line">    <span class="built_in">super</span>.stdOpList.add(<span class="string">&quot;+&quot;</span>);</span><br><span class="line">    <span class="built_in">super</span>.stdOpList.add(<span class="string">&quot;-&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>如此便省去了我们许多编码的时间。</p>
+<h5 id="4-1-2-2-InitVal-初值"><a href="#4-1-2-2-InitVal-初值" class="headerlink" title="4.1.2.2 InitVal 初值"></a>4.1.2.2 InitVal 初值</h5><p>观察语法成分，ConstInitVal与InitVal除了需要判断表达式是否为常量外，没有区别，故可以建立一个接口将二者统一起来，并且后续在中间代码生成阶段需要获取初值的表达式时，也可以不用区分二者。可以建立如下接口：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">InitialVal</span> &#123;</span><br><span class="line">    Exp <span class="title function_">getExp</span><span class="params">()</span>;   <span class="comment">//普通常量</span></span><br><span class="line">    ArrayList&lt;Exp&gt; <span class="title function_">getExps</span><span class="params">()</span>;   <span class="comment">//一维数组</span></span><br><span class="line">    ArrayList&lt;ArrayList&lt;Exp&gt;&gt; <span class="title function_">getExpArrays</span><span class="params">()</span>;   <span class="comment">//二维数组</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h5 id="4-1-2-3-Def与Decl"><a href="#4-1-2-3-Def与Decl" class="headerlink" title="4.1.2.3 Def与Decl"></a>4.1.2.3 Def与Decl</h5><p>Def、ConstDef与ConstDecl也是文法中的两对成分，而他们之间除了是否是常量以外也没有任何区别，所以不用对此进行区分，只需要在属性中加入一个<code>isConst</code>即可</p>
+<h5 id="4-1-2-3-Stmt与BlockItem"><a href="#4-1-2-3-Stmt与BlockItem" class="headerlink" title="4.1.2.3 Stmt与BlockItem"></a>4.1.2.3 Stmt与BlockItem</h5><p>各种Stmt与BlockItem只需建立一个接口即可，但他们之间并没有什么方法可以抽象，但是后续中间代码生成时需要使用。</p>
+<h5 id="4-1-2-4-其他"><a href="#4-1-2-4-其他" class="headerlink" title="4.1.2.4 其他"></a>4.1.2.4 其他</h5><p>其他语法成分没有什么可以进一步抽象的，为每一个成分单独建类即可。</p>
+<h4 id="4-1-3-Error"><a href="#4-1-3-Error" class="headerlink" title="4.1.3 Error"></a>4.1.3 Error</h4><p>顾名思义，代表一个错误，为错误处理而建立的类，记录下该错误所在的行号与类型。</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Error</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> line;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">char</span> errorType;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Error</span><span class="params">(<span class="type">int</span> line, <span class="type">char</span> errorType)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getLine</span><span class="params">()</span> </span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">char</span> <span class="title function_">getErrorType</span><span class="params">()</span> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="4-2-符号表"><a href="#4-2-符号表" class="headerlink" title="4.2 符号表"></a>4.2 符号表</h3><p>如果只是单纯的建立语法树，那么符号表并非必须，但后续的中间代码生成以及错误处理部分，就需要符号表的帮助了。</p>
+<h4 id="4-2-1-Symbol"><a href="#4-2-1-Symbol" class="headerlink" title="4.2.1 Symbol"></a>4.2.1 Symbol</h4><p>有如下几种情况需要建立一个symbol：</p>
+<ul>
+<li>ConstDef</li>
+<li>Def</li>
+<li>FuncDef</li>
+</ul>
+<p>并且Symbol应当存储有以下信息（此处仅考虑错误处理时的设计，后续中端代码生成阶段还需要增量开发）：</p>
+<ul>
+<li>行号（错误处理需要输出）</li>
+<li>所在的符号表</li>
+<li>符号名称</li>
+<li>种类</li>
+<li>是否为常量</li>
+</ul>
+<p>故Symbol的属性有：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Symbol</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> line;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolTable symbolTable;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String token;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolType type;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> isConst;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>上述代码中出现的SymbolType为一枚举类，记录符号的类型，如下所示：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">SymbolType</span> &#123;</span><br><span class="line">    VAR,        <span class="comment">//普通变量</span></span><br><span class="line">    ARRAY1,     <span class="comment">//一维数组</span></span><br><span class="line">    ARRAY2,     <span class="comment">//二维数组</span></span><br><span class="line">    FUNC,       <span class="comment">//函数</span></span><br><span class="line">    ERROR       <span class="comment">//错误</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h4 id="4-2-2-SymbolTable"><a href="#4-2-2-SymbolTable" class="headerlink" title="4.2.2 SymbolTable"></a>4.2.2 SymbolTable</h4><p>本编译器采用的符号表是树形符号表，而非理论课所讲的栈式符号表，树形符号表更适合递归下降的处理方式，故采用。</p>
+<p>首先依旧是明确什么时候需要建立一个符号表：</p>
+<ul>
+<li>程序最开始时</li>
+<li>进入到一个block时</li>
+</ul>
+<p>只有以上两点需要建立符号表。其次是符号表需要记录的信息，如下所示：</p>
+<ul>
+<li>id（符号表的标识）</li>
+<li>父表（结束一个block时要退回到父表）</li>
+<li>符号集合</li>
+</ul>
+<p>将上述分析过程转换为代码，即：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SymbolTable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolTable fatherTable;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;String, Symbol&gt; symbols;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>最后是功能分析，符号表的主要功能主要有两点：</p>
+<ul>
+<li>增加符号（如果重复添加就报b类错误）</li>
+<li>查找符号（如果本层没有就要去父表继续查找）</li>
+</ul>
+<p>转化为代码：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SymbolTable</span> &#123;</span><br><span class="line">    <span class="comment">// 属性...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addSymbol</span><span class="params">(Symbol symbol)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (symbols.containsKey(token)) &#123;</span><br><span class="line">            <span class="comment">//转错误处理</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// add symbol</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Symbol <span class="title function_">findSymbol</span><span class="params">(String token)</span> &#123;</span><br><span class="line">        <span class="comment">//从自己开始查</span></span><br><span class="line">        currentTable = <span class="built_in">this</span>;</span><br><span class="line">        <span class="keyword">while</span> (<span class="comment">/*当前表不为null*/</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (currentTable.containsSymbol(token)) &#123;</span><br><span class="line">                <span class="keyword">return</span> currentTable.getSymbol(token);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//在当前表没找到就去父表继续查</span></span><br><span class="line">            currentTable = currentTable.getFatherTable();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//没找到</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="4-3-部分实现细节"><a href="#4-3-部分实现细节" class="headerlink" title="4.3 部分实现细节"></a>4.3 部分实现细节</h3><h4 id="4-3-1-整体思路"><a href="#4-3-1-整体思路" class="headerlink" title="4.3.1 整体思路"></a>4.3.1 整体思路</h4><p>整体的实现思路是为每一条文法都建立一个方法，在方法内部不断调用<code>next()</code>方法读取下一个Token。并且各个方法之间存在着递归下降的关系，之前也提到过已经在设计部分将左递归文法改写完毕，所以不存在无法终止的现象，这一点与理论课程及其他编译器的处理类似，此处不过多赘述。以下针对一些特殊情况简要介绍一下本人的处理思路。</p>
+<h4 id="4-3-2-多产生式的处理"><a href="#4-3-2-多产生式的处理" class="headerlink" title="4.3.2 多产生式的处理"></a>4.3.2 多产生式的处理</h4><p>对于多产生式，如果是各个产生式的<code>First集</code>不存在交集的情况，只需要根据各个产生式的<code>First集</code>判断然后进入不同的分支即可，对于绝大多数的多产生式，我们都可以通过预读一个token的方法来解决。故需要实现一个<code>getNextToken()</code>方法，注意此处只能预读而不能将pointer真的增加。：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> String <span class="title function_">getNextToken</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> tokens.get(pointer + <span class="number">1</span>).getToken();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>而对于个别情况，其产生式的<code>First集</code>是有交集的，例如：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line">Stmt → LVal <span class="string">&#x27;=&#x27;</span> Exp <span class="string">&#x27;;&#x27;</span>    <span class="comment">// FIRST=&#123;Ident&#125;</span></span><br><span class="line">| LVal <span class="string">&#x27;=&#x27;</span> <span class="string">&#x27;getint&#x27;</span><span class="string">&#x27;(&#x27;</span><span class="string">&#x27;)&#x27;</span><span class="string">&#x27;;&#x27;</span>    <span class="comment">// FIRST=&#123;Ident&#125;</span></span><br><span class="line">| [Exp] <span class="string">&#x27;;&#x27;</span>     <span class="comment">// FIRST=&#123;(,Number,Ident,+,-,!&#125;</span></span><br></pre></td></tr></table></figure></div>
+<p>本编译器处理这种情况采取的方法整体借鉴教程，但实现细节不太一样。此前提到过，我在Parser类里开了几个全局变量：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Parser</span> &#123;</span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;String&gt; tmpOutput;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Error&gt; tmpErrorOutput;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> timeStop;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>其中，<code>timeStop</code>是一个状态标记，当解析到一个标识符（上述三条产生式的<code>First集</code>的交集）时，就将timeStop置为true，意为此时模拟一种暂停的情况，是一个“试探”的过程。然后调用<code>parseExp()</code>方法，注意此时解析带来的所有语法输出不能直接加入<code>syntaxOutput</code>，应该先加入一个临时的集合中，因为如果最后发现正在解析的不是<code>Exp</code>而是<code>LVal</code>，再去删除这部分语法输出就会很麻烦，错误处理输出同理。</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">addSyntaxOutput</span><span class="params">(String s)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!timeStop) &#123;</span><br><span class="line">        syntaxOutput.add(s);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        tmpOutput.add(s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>解析完以后观察<code>curToken</code>，若是<code>&#39;;&#39;</code>，就说明是<code>[Exp] &#39;;&#39;</code>这条文法，就将临时集合里的输出加入正式结果；若是 <code>&#39;=&#39;</code>，就说明是<code>LVal &#39;=&#39; Exp &#39;;&#39;</code>或者<code>LVal &#39;=&#39; &#39;getint&#39;&#39;(&#39;&#39;)&#39;&#39;;&#39;</code>，再进行进一步判断就很简单了。</p>
+<h4 id="4-3-3-进入一个作用域的流程"><a href="#4-3-3-进入一个作用域的流程" class="headerlink" title="4.3.3 进入一个作用域的流程"></a>4.3.3 进入一个作用域的流程</h4><div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Parser</span> &#123;</span><br><span class="line">    <span class="comment">// ... </span></span><br><span class="line">    <span class="comment">// 为处理符号表设计的全局变量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> currentTableId;     <span class="comment">// 当前表的id</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> fatherTableId;      <span class="comment">// 父级表的id</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> countOfTable;       <span class="comment">// 表的数量</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>进入一个作用域（block），有如下几件事需要做：</p>
+<ol>
+<li>将全局变量中的fatherTableId赋值为当前符号表的id</li>
+<li>建立属于本作用域的符号表</li>
+<li>将currentTableId赋值为新建立的表的id</li>
+<li>语法分析</li>
+<li>将currentTableId重新赋为fatherTableId</li>
+</ol>
+<h2 id="五、错误处理"><a href="#五、错误处理" class="headerlink" title="五、错误处理"></a>五、错误处理</h2><p>本编译器所有错误处理均是在语法分析过程中实现，没有将其作为一个单独的步骤。</p>
+<h3 id="5-1-非法符号"><a href="#5-1-非法符号" class="headerlink" title="5.1 非法符号"></a>5.1 非法符号</h3><ul>
+<li><strong>错误类别码</strong>：a</li>
+<li><strong>解释</strong>：格式字符串中出现非法字符报错行号为<code>FormatString</code>所在行数。</li>
+<li><strong>处理思路</strong>：在语法分析中实现，遍历到<code>printf</code>时检查一下<code>formatString</code>是否符合要求即可。只是对字符串进行处理，较为简单，不多赘述。</li>
+</ul>
+<h3 id="5-2-名字重定义"><a href="#5-2-名字重定义" class="headerlink" title="5.2 名字重定义"></a>5.2 名字重定义</h3><ul>
+<li><strong>错误类别码</strong>：b</li>
+<li><strong>解释</strong>：函数名或者变量名在当前作用域下重复定义。注意，变量一定是同一级作用域下才会判定出错，不同级作用域下，内层会覆盖外层定义。报错行号为 <code>Ident</code>所在行数。</li>
+<li><strong>处理思路</strong>：在<code>parseDef/parseConstDef</code>中实现，当定义一个新的标识符时，就要加入符号表，在加入符号表的时候检查是否重复，具体代码如4.2.2所示</li>
+</ul>
+<h3 id="5-3-未定义的名字"><a href="#5-3-未定义的名字" class="headerlink" title="5.3 未定义的名字"></a>5.3 未定义的名字</h3><ul>
+<li><strong>错误类别码</strong>：c</li>
+<li><strong>解释</strong>：使用了未定义的标识符报错行号为 <code>Ident</code> 所在行数。</li>
+<li><strong>处理思路</strong>：在语法分析中实现，如<code>4.2.2 SymbolTable</code>一节中代码所示，当我需要查找符号表时，自底向上查找，如果没有找到就说明使用了未定义的名字。</li>
+</ul>
+<h3 id="5-4-函数参数个数不匹配"><a href="#5-4-函数参数个数不匹配" class="headerlink" title="5.4 函数参数个数不匹配"></a>5.4 函数参数个数不匹配</h3><ul>
+<li><strong>错误类别码</strong>：d</li>
+<li><strong>解释</strong>：函数调用语句中，参数个数与函数定义中的参数个数不匹配。报错行号为函数调用语句的函数名所在行数。</li>
+<li><strong>处理思路</strong>：单独为函数型符号设置一个类，让其继承<code>Symbol</code>类，除了常规symbol记录的信息外，还需记录函数的类型，参数。代码如下所示：  <div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FuncSymbol</span> <span class="keyword">extends</span> <span class="title class_">Symbol</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> funcType;     <span class="comment">// 0: void, 1: int</span></span><br><span class="line">    <span class="comment">// 只存储参数的类型</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;SymbolType&gt; params; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+  由于编译器只需要校验参数的类型、个数，所以我只需要存储参数的类型即可。在调用函数时，也就是<code>parseLval()</code>这个函数中，需要解析小括号内有多少个逗号，参数的个数应该是逗号的个数+1。注意这里不能直接解析参数的个数，因为这样是要以右括号为循环终止条件的，右括号有可能缺失。</li>
+</ul>
+<h3 id="5-5-函数参数类型不匹配"><a href="#5-5-函数参数类型不匹配" class="headerlink" title="5.5 函数参数类型不匹配"></a>5.5 函数参数类型不匹配</h3><ul>
+<li><strong>错误类别码</strong>：e</li>
+<li><strong>解释</strong>：函数调用语句中，参数个数与函数定义中的参数类型不匹配。报错行号为函数调用语句的函数名所在行数。</li>
+<li><strong>处理思路</strong>：类比<code>5.5 函数参数个数不匹配</code>这一部分，只要在检查参数个数的时候再检查类型就行了。</li>
+</ul>
+<h3 id="5-6-无返回值的函数存在不匹配的return语句"><a href="#5-6-无返回值的函数存在不匹配的return语句" class="headerlink" title="5.6 无返回值的函数存在不匹配的return语句"></a>5.6 无返回值的函数存在不匹配的return语句</h3><ul>
+<li><strong>错误类别码</strong>：f</li>
+<li><strong>解释</strong>：报错行号为 ‘return’ 所在行号。</li>
+<li><strong>处理思路</strong>：如此前代码所示，在<code>Parser</code>中开一个全局变量<code>currentFuncType</code>，在<code>parseFuncDef()</code>中为<code>currentFuncType</code>赋值，如果是void就是0，是int就是1。在<code>parseReturnStmt()</code>，如果当前<code>currentFuncType</code> &#x3D; 0，并且如果return之后的token的类别是<code>Ident</code>、<code>IntCon</code>或者是<code>UnaryOp</code>，那么就需要说明存在f类错误。</li>
+</ul>
+<h3 id="5-7-有返回值的函数缺少return语句"><a href="#5-7-有返回值的函数缺少return语句" class="headerlink" title="5.7 有返回值的函数缺少return语句"></a>5.7 有返回值的函数缺少return语句</h3><ul>
+<li><strong>错误类别码</strong>：g</li>
+<li><strong>解释</strong>：只需要考虑函数末尾是否存在return语句，无需考虑数据流。报错行号为函数结尾的’}’ 所在行号。</li>
+<li><strong>处理思路</strong>：类比上一类错误，在函数解析完后，如果<code>currentFuncType</code> &#x3D; 1，并且block的最后一条语句不是return，就要报错。</li>
+</ul>
+<h3 id="5-8-不能改变常量的值"><a href="#5-8-不能改变常量的值" class="headerlink" title="5.8 不能改变常量的值"></a>5.8 不能改变常量的值</h3><ul>
+<li><strong>错误类别码</strong>：h</li>
+<li><strong>解释</strong>：<code>LVal</code>为常量时，不能对其修改。报错行号为 <code>LVal</code> 所在行号。</li>
+<li><strong>处理思路</strong>：在赋值语句与getint语句时，检查<code>LVal</code>所对应的Symbol是否是常量，如果是的话，报错。</li>
+</ul>
+<h3 id="5-9-缺少分号"><a href="#5-9-缺少分号" class="headerlink" title="5.9 缺少分号"></a>5.9 缺少分号</h3><ul>
+<li><strong>错误类别码</strong>：i</li>
+<li><strong>解释</strong>：报错行号为分号前一个非终结符所在行号。</li>
+<li><strong>处理思路</strong>：这类错误非常常见，没有什么特别好的处理办法，只能在逐个token解析时加以判断。</li>
+</ul>
+<h3 id="5-10-缺少右小括号"><a href="#5-10-缺少右小括号" class="headerlink" title="5.10 缺少右小括号"></a>5.10 缺少右小括号</h3><ul>
+<li><strong>错误类别码</strong>：j</li>
+<li><strong>解释</strong>：报错行号为右小括号前一个非终结符所在行号。</li>
+<li><strong>处理思路</strong>：在逐个token解析时加以判断。</li>
+</ul>
+<h3 id="5-11-缺少右中括号"><a href="#5-11-缺少右中括号" class="headerlink" title="5.11 缺少右中括号"></a>5.11 缺少右中括号</h3><ul>
+<li><strong>错误类别码</strong>：k</li>
+<li><strong>解释</strong>：报错行号为右中括号前一个非终结符所在行号。</li>
+<li><strong>处理思路</strong>：在逐个token解析时加以判断。</li>
+</ul>
+<h3 id="5-12-printf中格式字符与表达式个数不匹配"><a href="#5-12-printf中格式字符与表达式个数不匹配" class="headerlink" title="5.12 printf中格式字符与表达式个数不匹配"></a>5.12 printf中格式字符与表达式个数不匹配</h3><ul>
+<li><strong>错误类别码</strong>：l</li>
+<li><strong>解释</strong>：报错行号为 ‘printf’ 所在行号。</li>
+<li><strong>处理思路</strong>：类似于函数调用的实参问题，统计逗号的个数，再与<code>%d</code>的个数相比较，对不上就报错。</li>
+</ul>
+<h3 id="5-13-在非循环块中使用break和continue语句"><a href="#5-13-在非循环块中使用break和continue语句" class="headerlink" title="5.13 在非循环块中使用break和continue语句"></a>5.13 在非循环块中使用break和continue语句</h3><ul>
+<li><strong>错误类别码</strong>：m</li>
+<li><strong>解释</strong>：报错行号为 ‘break’ 与 ’continue’ 所在行号。</li>
+<li><strong>处理思路</strong>：全局变量开了一个<code>canBorC</code>，意思是判断是否可以出现<code>break</code>或<code>continue</code>。当解析到<code>if</code>语句或者<code>for</code>语句时，就将该全局变量设为真，解析结束就将其置为假。</li>
+</ul>
+<h2 id="六、中端代码生成"><a href="#六、中端代码生成" class="headerlink" title="六、中端代码生成"></a>六、中端代码生成</h2><p>综合多方面考虑，我选择了LLVM作为本编译器的中端代码。选择LLVM作为中端代码有诸多好处，比如课程网站有详细的教程可以参考，课程组提供评测机检验正确性，省去了自己设计四元式的时间，<del>还有往届学长的思路可以参考</del>。并且LLVM本身的代码结构也和mips比较相近，就拿我本人而言，在生成了LLVM以后，只花了半个礼拜就顺利通过了mips的测评。下面开始介绍一些相关设计。</p>
+<h3 id="6-1-架构"><a href="#6-1-架构" class="headerlink" title="6.1 架构"></a>6.1 架构</h3><h4 id="6-1-1-总体思路"><a href="#6-1-1-总体思路" class="headerlink" title="6.1.1 总体思路"></a>6.1.1 总体思路</h4><p>中端代码的总体架构参考教程介绍，<code>Module</code>-&gt;<code>Function</code>-&gt;<code>Basic Block</code>-&gt;<code>Instruction</code>。遍历语法分析阶段产生的语法树，自顶向下建立一个中端代码树，如果语法分析阶段建立的语法树有序且正确的话，中端代码生成阶段再建立一个中端语法书应该是不难的。此处还需特别说明一下，中端代码所用到的符号表即为语法分析阶段所建立的符号表，并没有针对LLVM新建一张，而是在之前的符号表上进行增量开发，但后端代码生成需要有一张自己的符号表。</p>
+<p>中端代码必须要对符号表进行一些必要的修改，举个例子来说：</p>
+<div class="highlight-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span> b = a;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, b);</span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> a = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>对于上述代码，如果依据我们此前的符号表，b的正确输出应该是1，但实际上会被输出成2，因为我们的符号表找一个<code>symbol</code>是自底向上查找的，且不会考虑<code>symbol</code>出现的顺序，符号表在最底层找到了a，那么就会把最底层的a返回。所以我们在遍历符号表的时候必须要考虑symbol出现的顺序，可以对符号表作如下修改：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Symbol</span> &#123;</span><br><span class="line">    <span class="comment">// 记录总的symbol的数量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">SymbolCnt</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 为每个symbol设置一个id，即出现的顺序，id = SymbolCnt++</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> id;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SymbolTable</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> Symbol <span class="title function_">findSymbolByOrder</span><span class="params">(String token, <span class="type">int</span> targetId)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>在<code>SymbolTable</code>中提供按顺序查找<code>symbol</code>的方法，传入<code>targetId</code>，即当前处理的<code>symbol</code>的id，判断<code>symbol</code>的token相等的同时还要判断查找出来的<code>symbol</code>的id要小于<code>targetId</code>，两个条件都满足才能说明找到了正确的<code>symbol</code>。</p>
+<p>此外，对于每个中端代码成分，都提供<code>toLlvm方法</code>，返回一个字符串，可以输出LLVM代码。</p>
+<h3 id="6-1-2-Value"><a href="#6-1-2-Value" class="headerlink" title="6.1.2 Value"></a>6.1.2 Value</h3><p><code>Value</code>是LLVM中非常重要的一个概念，LLVM中几乎所有的结构都可以认为是一个<code>Value</code>，所以对于<code>Value</code>的设计是非常重要的。经过笔者本人惨痛的教训，经过几轮缝缝补补，终于得出了最终版的<code>Value</code>，需要记录的信息如下所示：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 1. i32</span></span><br><span class="line"><span class="comment">     * 2. i32*</span></span><br><span class="line"><span class="comment">     * 3. i32**             函数传参传过来的一维数组</span></span><br><span class="line"><span class="comment">     * 4. [n x i32]*</span></span><br><span class="line"><span class="comment">     * 5. [m x [n x i32]]*  正常声明的二维数组</span></span><br><span class="line"><span class="comment">     * 6. [n x i32]**       函数传参传过来二维数组</span></span><br><span class="line"><span class="comment">     * 7. i1</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">varType</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">row</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">col</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 需要提供三种构造方法 */</span></span><br><span class="line">    <span class="comment">// 普通变量</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Value</span><span class="params">(String name, <span class="type">int</span> varType)</span></span><br><span class="line">    <span class="comment">// 一维数组</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Value</span><span class="params">(String name, <span class="type">int</span> varType, <span class="type">int</span> col)</span></span><br><span class="line">    <span class="comment">// 二维数组</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Value</span><span class="params">(String name, <span class="type">int</span> varType, <span class="type">int</span> row, <span class="type">int</span> col)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>其中最重要的是<code>Value</code>的类型，教程中并没有地方显式的说明，需要自己总结。经总结后，一共有以下七种类型：</p>
+<ol>
+<li><strong>i32</strong>：整数类型</li>
+<li>__i32*__：整数类型的地址</li>
+<li>__i32**__：函数传参传过来的一维数组</li>
+<li>__[n x i32]*__：正常声明的一维数组</li>
+<li>__[m x [n x i32]]*__：正常声明的二维数组</li>
+<li>__[n x i32]**__：函数传参传过来二维数组</li>
+<li>__i1__：条件变量</li>
+</ol>
+<h3 id="6-1-3-IrBuilder"><a href="#6-1-3-IrBuilder" class="headerlink" title="6.1.3 IrBuilder"></a>6.1.3 IrBuilder</h3><p>作用类似语法分析阶段里的Parser，提供以下方法：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 最上层的build方法，按全局变量、函数、基本块、指令的顺序依次调用各成分的build方法</span></span><br><span class="line"><span class="keyword">public</span> IrModule <span class="title function_">build</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建全局变量的中间代码</span></span><br><span class="line"><span class="keyword">public</span> IrGlobalVar <span class="title function_">buildGlobalVar</span><span class="params">(Def globalDef)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建函数的中间代码</span></span><br><span class="line"><span class="keyword">public</span> IrFunction <span class="title function_">buildFunction</span><span class="params">(FuncDef funcDef)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建主函数的中间代码</span></span><br><span class="line"><span class="keyword">public</span> IrFunction <span class="title function_">buildMainFunction</span><span class="params">(MainFuncDef mainFuncDef)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建基本块的中间代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">buildBasicBlock</span><span class="params">(String label)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 构建指令的中间代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">buildInstruction</span><span class="params">(BlockItem blockItem)</span></span><br></pre></td></tr></table></figure></div>
+<p>具体到不同的语法成分，还需要单独的提供转化成LLVM的方法，此处不多赘述。</p>
+<h3 id="6-1-4-IrComponents"><a href="#6-1-4-IrComponents" class="headerlink" title="6.1.4 IrComponents"></a>6.1.4 IrComponents</h3><h4 id="6-1-4-1-IrGlobalVar"><a href="#6-1-4-1-IrGlobalVar" class="headerlink" title="6.1.4.1 IrGlobalVar"></a>6.1.4.1 IrGlobalVar</h4><p>IrGlobalVar指的是LLVM里的全局变量，需要记录以下信息：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">IrGlobalVar</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> type;       <span class="comment">// 0: 普通变量，1：一维数组，2：二维数组</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String token;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> isConst;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> dim1;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> dim2;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">hasInitialValue</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">private</span> InitialVal initialVal;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SymbolTable symbolTable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h4 id="6-1-4-2-IrFunction"><a href="#6-1-4-2-IrFunction" class="headerlink" title="6.1.4.2 IrFunction"></a>6.1.4.2 IrFunction</h4><p><code>IrFunction</code>指的是LLVM里的Function部分，根据LLVM里一切皆<code>Value</code>的原则，我们让<code>IrFunction</code>继承<code>Value</code>，需要记录以下信息：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">IrFunction</span> <span class="keyword">extends</span> <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String funcName;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> funcType;       <span class="comment">// 0: void, 1: int</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Value&gt; params;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;BasicBlock&gt; basicBlocks;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h4 id="6-1-4-3-BasicBlock"><a href="#6-1-4-3-BasicBlock" class="headerlink" title="6.1.4.3 BasicBlock"></a>6.1.4.3 BasicBlock</h4><p>依旧是让<code>BasicBlock</code>继承Value，需要记录以下信息：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BasicBlock</span> <span class="keyword">extends</span> <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String label;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Instruction&gt; instructions;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h4 id="6-1-4-4-IrInstructions"><a href="#6-1-4-4-IrInstructions" class="headerlink" title="6.1.4.4 IrInstructions"></a>6.1.4.4 IrInstructions</h4><p>对于每一种<code>Instruction</code>，都让其继承<code>Value</code>，具体的属性设置完全依照教程中提供的指令集，值得一提的是，<strong>指令的属性能用Value表示的一定不要用String</strong>，因为指令归根到底也是一个<code>Value</code>，<code>String</code>能表示的信息非常有限，我们对于任何一个指令，当这条指令被当作<code>Value</code>看待时，可能不止要知道指令的名字，也要知道类型等其他信息。这个时候我们需要让指令的<code>Result</code>代表整条指令的<code>Value</code>，所以需要重写<code>Value</code>中的一些方法</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getVarType</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().getVarType();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">typeToLlvm</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().typeToLlvm();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getRow</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().getRow();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCol</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>.getResult().getCol();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h2 id="6-2-实现难点"><a href="#6-2-实现难点" class="headerlink" title="6.2 实现难点"></a>6.2 实现难点</h2><h3 id="6-2-1-跳转标签"><a href="#6-2-1-跳转标签" class="headerlink" title="6.2.1 跳转标签"></a>6.2.1 跳转标签</h3><p>在<code>If</code>和<code>For</code>语句中要用到大量的跳转指令，但跳转的标签很有可能是不确定的，就比如分支语句中，至少要设置两个标签，一个是进入分支的标签，另一个if结束的标签，但是我们并不知道是否会有else的标签，所有就不能提前开好这些标签。</p>
+<p>这里我们可以运用java中引用的一个特性，即java中对象之间的赋值均为浅拷贝。我们可以将未知跳转标签的跳转指令加进一个容器中，当处理到了目标基本块的时候就把他们都回填成该基本块的标签。</p>
+<h3 id="6-2-2-GEP指令"><a href="#6-2-2-GEP指令" class="headerlink" title="6.2.2 GEP指令"></a>6.2.2 GEP指令</h3><p>我们在LLVM中操作数组时，不可避免的需要用到<code>getelementptr</code>指令，但gep指令的类型部分非常难以确定，不过好在我们在设计<code>Value</code>时已经设计好了不同种类，我们可以根据该种类判断具体是哪种情况，直接挪用即可。针对gep指令，我还特地为<code>Value</code>设计了一个类型转换的方法，即根据类型编码转化为对应的LLVM语句：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> String <span class="title function_">typeToLlvm</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> (varType) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">2</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i32*&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i32**&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">4</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;[&quot;</span> + col + <span class="string">&quot; x i32]*&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">5</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;[&quot;</span> + row + <span class="string">&quot; x [&quot;</span> + col + <span class="string">&quot; x i32]]*&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">6</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;[&quot;</span> + col + <span class="string">&quot; x i32]**&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">7</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i1&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">default</span> -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;i32&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>其次，对于函数传进来的数组，我们是不需要先加一个<code>i32 0</code>的。</p>
+<p>注意好以上两点，gep指令基本上没什么问题了。</p>
+<h2 id="七、后端代码生成"><a href="#七、后端代码生成" class="headerlink" title="七、后端代码生成"></a>七、后端代码生成</h2><p>在生成LLVM以后，生成mips代码就显得简单许多。</p>
+<h3 id="7-1-架构"><a href="#7-1-架构" class="headerlink" title="7.1 架构"></a>7.1 架构</h3><h4 id="7-1-1-整体思路"><a href="#7-1-1-整体思路" class="headerlink" title="7.1.1 整体思路"></a>7.1.1 整体思路</h4><p>因为LLVM已经为我们构建了中间代码语法树，我们从<code>Module</code>入手，自顶向下地分析即可，同样也是构建一个<code>MipsBuilder</code>用来构建后端代码。</p>
+<p>在<code>MipsBuilder</code>里，首先需要建立一个<code>HashMap</code>，存储寄存器的编号和名称的映射关系，之后即与<code>Parser</code>和<code>IrBuilder</code>类似，为<code>Function</code>、<code>BasicBlock</code>、<code>Instruction</code>分别提供build方法。</p>
+<h4 id="7-1-2-RegManager"><a href="#7-1-2-RegManager" class="headerlink" title="7.1.2 RegManager"></a>7.1.2 RegManager</h4><p>在优化之前，我的寄存器分配思路是先把能分配的都分配了，剩下的再推进内存，因此我建立了一个<code>RegManager</code>，用于管理寄存器。<br><code>RegManager</code>应当具有以下功能：</p>
+<ul>
+<li>查看一个寄存器是否被占用</li>
+<li>分配给<code>MipsBuilder</code>一个空闲的寄存器</li>
+<li>释放一个正在被占用的寄存器</li>
+</ul>
+<p>代码如下：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RegManager</span> &#123;</span><br><span class="line">    <span class="comment">// key：寄存器编号，value：是否被占用</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;Integer, Boolean&gt; regMap;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">RegManager</span><span class="params">()</span> &#123;</span><br><span class="line">        regMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        <span class="comment">//初始化时全部寄存器都为空闲</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">32</span>; i++) &#123;</span><br><span class="line">            regMap.put(i, <span class="literal">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 分配一个空闲的寄存器</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">allocTmpReg</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 判断一个寄存器是否被占用</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isUsed</span><span class="params">(<span class="type">int</span> reg)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放一个寄存器</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">unmap</span><span class="params">(<span class="type">int</span> reg)</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>在RegManager里，分配寄存器时只能分配t类和s类，如果没有空闲的寄存器就返回-1。</p>
+<h4 id="7-1-3-后端符号表"><a href="#7-1-3-后端符号表" class="headerlink" title="7.1.3 后端符号表"></a>7.1.3 后端符号表</h4><p>生成中间代码时，我们还能勉强采用之前的符号表，但是到了后端，我们就不能偷懒了，因为LLVM产生了很多中间变量，在中端时我们不用管他们，但后端不同，我们需要为其分配寄存器或者内存，需要记录寄存器编号和在内存中的相对位置，所以我们必须要新开一个符号表。</p>
+<p>对于后端的<code>Symbol</code>，我们不需要记录太多信息，只需要记录其在LLVM中的名字与寄存器编号&#x2F;在内存中的位置即可。</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MipsValue</span> &#123;</span><br><span class="line">    <span class="comment">/** 若变量存入内存，需要记录相对于base的偏移量 */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> baseReg;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> offset;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">boolean</span> isInReg;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> tmpReg; <span class="comment">// 如果变量在寄存器中，则记录临时的寄存器</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>后端的<code>SymbolTable</code>与前端差别不大，不多赘述</p>
+<h3 id="7-2-实现细节"><a href="#7-2-实现细节" class="headerlink" title="7.2 实现细节"></a>7.2 实现细节</h3><h4 id="7-2-1-全局变量"><a href="#7-2-1-全局变量" class="headerlink" title="7.2.1 全局变量"></a>7.2.1 全局变量</h4><p>对于全局变量的处理，我并没有采用教程中介绍的<code>.data</code>的方式，而是直接把全局变量用sw指令压在<code>$gp</code>中。<del>因为我懒得再多写一个<code>.data</code>的功能</del>。</p>
+<h4 id="7-2-2-函数调用"><a href="#7-2-2-函数调用" class="headerlink" title="7.2.2 函数调用"></a>7.2.2 函数调用</h4><p>函数调用是mips的一大难点，在我的编译器中，一旦涉及到函数调用，就需要执行如下几个步骤：</p>
+<ul>
+<li>保存<code>$ra</code>至<code>$sp</code>中，栈顶减4。</li>
+<li>将函数实参压入栈中：<ul>
+<li>小于4个参数：将参数的值赋给a系列寄存器，</li>
+<li>多于4个参数：将参数的值压进内存，并将其在内存中的位置记录在符号表中。</li>
+</ul>
+</li>
+<li>然后是至关重要的一步，要将<code>$fp</code>的值赋给<code>$v1</code>，<code>$v1</code>是一个机动寄存器。这一步的目的是，要记录下保存完参数、保存临时寄存器之前的地址，子函数可以从这里往回找参数。因为之后还要把临时寄存器存进<code>$fp</code>中，所以不在此时记录下fp的值就会导致子函数找不到形参。</li>
+<li>然后是将用到的临时寄存器保存起来，这里只存用到的t类和s类即可。这里在函数内部还要维护一个HashMap，记录下寄存器编号和内存里的地址的对应关系，方便函数调用结束后找回这些寄存的值。</li>
+<li>将<code>$fp</code>自增fpOffset</li>
+<li>将所有寄存器解除映射，子函数可以随意使用寄存器，因为已经保存过了。</li>
+<li>加入<code>Jal</code>指令。</li>
+<li><code>$sp</code>自增4，恢复<code>$ra</code></li>
+<li>恢复<code>$fp</code>，将<code>$fp</code>减去fpOffset。</li>
+<li>恢复fpOffset。</li>
+<li>恢复临时寄存器，从之前提到过的HashMap中取出寄存器的值。</li>
+<li>处理函数返回值，将<code>$v0</code>存入内存中。</li>
+</ul>
+<p>经历了上述步骤，函数调用就算处理完了。</p>
+<h4 id="7-3-3-数组处理"><a href="#7-3-3-数组处理" class="headerlink" title="7.3.3 数组处理"></a>7.3.3 数组处理</h4><p>数组处理我本来是想按照写mips的习惯，写两个宏指令来处理的，但是不知道为什么课程组不让用macro，于是只能放弃。当遇到一个LLVM中的gep指令时，有如下步骤需要做：<br><strong>一维数组</strong>：</p>
+<ul>
+<li>获取数组中括号里的值，先左移两位（乘以4），得到相对于数组基地址的偏移量。</li>
+<li>从符号表中查到该数组的基地址</li>
+<li>将基地址与偏移量相加，得到目标元素的地址。</li>
+</ul>
+<p><strong>二维数组</strong>：</p>
+<ul>
+<li>获取该数组的第二维的值dim2，用数组第一维的偏移乘以dim2</li>
+<li>用上一步得到的地址加上第二维的偏移</li>
+<li>乘以4</li>
+<li>与数组的基地址相加。</li>
+</ul>
+<h2 id="八、优化部分"><a href="#八、优化部分" class="headerlink" title="八、优化部分"></a>八、优化部分</h2><p>由于本学期数据库的截止时间与编译实验的截止时间高度重合，所以我优化部分做的不是很多，当然一方面也有自己的懒惰、保守等原因，总归确实还挺遗憾的。</p>
+<h3 id="8-1-乘除法优化"><a href="#8-1-乘除法优化" class="headerlink" title="8.1 乘除法优化"></a>8.1 乘除法优化</h3><p><strong>乘法优化</strong>：<br>先判断乘法的两个操作数有没有常数：</p>
+<ul>
+<li>有常数，判断是否是2的幂次，若是，则转变为sll，若不是，用乘法指令</li>
+<li>没有常数，用乘法指令</li>
+</ul>
+<p><strong>除法优化</strong>：<br>具体方法参见教程和往届各个大佬的博客就好，我这里就不多做赘述了，直接放上我的实现代码：</p>
+<div class="highlight-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">optimizeDiv</span><span class="params">(<span class="type">int</span> targetReg, <span class="type">int</span> regOp1, <span class="type">int</span> d)</span> &#123;</span><br><span class="line">    <span class="comment">// 选择multiplier和shift部分</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> <span class="number">32</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">precision</span> <span class="operator">=</span> N - <span class="number">1</span>;      <span class="comment">//除数的大小描述，有 divisor &lt; 2^precision</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">dAbs</span> <span class="operator">=</span> Math.abs(d);         <span class="comment">//除数的绝对值</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">log</span> <span class="operator">=</span> N - Integer.numberOfLeadingZeros(dAbs - <span class="number">1</span>);</span><br><span class="line">    <span class="type">int</span> <span class="variable">shift</span> <span class="operator">=</span> log;</span><br><span class="line">    <span class="type">double</span> <span class="variable">low</span> <span class="operator">=</span> Math.floor(Math.pow(<span class="number">2</span>, N + log) / dAbs);</span><br><span class="line">    <span class="type">double</span> <span class="variable">high</span> <span class="operator">=</span> Math.floor((Math.pow(<span class="number">2</span>, N + log) </span><br><span class="line">                    + Math.pow(<span class="number">2</span>, N + log - precision)) / dAbs);</span><br><span class="line">    <span class="keyword">while</span> (Math.floor(low / <span class="number">2.0</span>) &lt; Math.floor(high / <span class="number">2.0</span>) &amp;&amp; shift &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 求shift</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">long</span> <span class="variable">m</span> <span class="operator">=</span> (<span class="type">long</span>) high;</span><br><span class="line">    <span class="keyword">if</span> (dAbs == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// 结果等于被除数</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (dAbs == Math.pow(<span class="number">2</span>, log)) &#123;      <span class="comment">// 除2的幂</span></span><br><span class="line">        <span class="comment">// 类比乘法，转化为右移指令</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (m &lt; Math.pow(<span class="number">2</span>, N - <span class="number">1</span>)) &#123;        <span class="comment">// multiplier比较小</span></span><br><span class="line">        <span class="type">Li</span> <span class="variable">li</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Li</span>(targetReg, (<span class="type">int</span>) m);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, li);</span><br><span class="line">        <span class="type">Mult</span> <span class="variable">mult</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mult</span>(targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mult);</span><br><span class="line">        <span class="type">Mfhi</span> <span class="variable">mfhi</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mfhi</span>(targetReg);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mfhi);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(targetReg, targetReg, shift);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra1);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(regOp1, regOp1, <span class="number">31</span>);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra2);</span><br><span class="line">        <span class="type">Subu</span> <span class="variable">subu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Subu</span>(targetReg, targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, subu);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">m1</span> <span class="operator">=</span> m - (<span class="type">long</span>) Math.pow(<span class="number">2</span>, N);</span><br><span class="line">        <span class="type">Li</span> <span class="variable">li</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Li</span>(targetReg, (<span class="type">int</span>) m1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, li);</span><br><span class="line">        <span class="type">Mult</span> <span class="variable">mult</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mult</span>(targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mult);</span><br><span class="line">        <span class="type">Mfhi</span> <span class="variable">mfhi</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Mfhi</span>(targetReg);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, mfhi);</span><br><span class="line">        <span class="type">Addu</span> <span class="variable">addu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Addu</span>(targetReg, targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, addu);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(targetReg, targetReg, shift);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra1);</span><br><span class="line">        <span class="type">Sra</span> <span class="variable">sra2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Sra</span>(regOp1, regOp1, <span class="number">31</span>);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, sra2);</span><br><span class="line">        <span class="type">Subu</span> <span class="variable">subu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Subu</span>(targetReg, targetReg, regOp1);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, subu);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (d &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 负数的情况</span></span><br><span class="line">        <span class="type">Subu</span> <span class="variable">subu</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Subu</span>(targetReg, <span class="number">0</span>, targetReg);</span><br><span class="line">        addMipsInstr(MipsInstrType.COMMON, subu);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h3 id="8-2-基本块优化"><a href="#8-2-基本块优化" class="headerlink" title="8.2 基本块优化"></a>8.2 基本块优化</h3><p>mips中指令是顺序执行的，而LLVM中指令是一定要在一个基本块内执行，这就为我们带来了很多的优化空间，尤其是本人在实现LLVM中由于跳转语句的逻辑不是很清晰，带来了很多没有用的基本块和跳转语句，所以我选择这步优化是非常必要的且比较卓有成效。<br>其中基本块优化中我实现了合并基本块这部分，流程如下：</p>
+<ul>
+<li>构建两个HashMap，分别是前驱集合和后继集合，两个集合的key都是<code>BasicBlock</code>，value都是<code>ArrayList&lt;BasicBlock&gt;</code>。代表着当前的基本块的前驱和后继集合。</li>
+<li>构建基本块之间的流图。由于基本块的最后一条语句一定是一条出口语句（跳转语句或者返回语句），所以我们只需要看这个基本块最后一条语句是什么类型的语句即可，有以下这么几种情况：<ul>
+<li><code>br Label</code>，将当前基本块与Label进行双向链接，过程可类比双向链表</li>
+<li><code>br cond trueLabel, falseLabel</code>，与两个目标基本块都进行连接</li>
+<li><code>return</code>，没有后继，不用理会</li>
+</ul>
+</li>
+<li>我们合并基本块有两个基本条件，一个是当前基本块要和后继基本块相邻，另一个是该后继基本块不能有其他后继，如果满足上述两个条件，就可进行进一步的优化。</li>
+<li>合并基本块的方法就是把该基本块的最后一条语句（一定是跳转语句）删掉，把后继基本块的指令全部加到该基本块中，删除后继基本块。这就要求我们的基本块内有且只有一条跳转语句，再之前生成LLVM的时候其实我是不能保证这一点的，所以完成这次优化我也顺便删除了一些不会被执行到的死代码。</li>
+</ul>
+<h3 id="8-3-指令选择"><a href="#8-3-指令选择" class="headerlink" title="8.3 指令选择"></a>8.3 指令选择</h3><p>把所有的subiu都换成addiu，由于我本身用到的指令类型也不是很多，伪指令中有不合理展开的只有这一条，所以我就只优化了这一条代码。</p>
+<h2 id="9-总结感想"><a href="#9-总结感想" class="headerlink" title="9. 总结感想"></a>9. 总结感想</h2><p>&emsp;&emsp; 来到计算机学院以后，类似这样的总结感想已经写过三篇了，这是第四篇。每当我写总结感想的时候都比较感慨，心情也很复杂，一方面是要和自己耕耘了一个学期的代码说再见了，难免有点不舍；另一方面是经过自己一个学期的反复增删修改，代码难免有点不能看了，可算是个解脱。<br>&emsp;&emsp; 说回到编译，这一学期的编译实验还是让我收获非常丰富的。首先就是让我更加深刻的理解了编译的原理与技术，加深了我对于理论课程的理解，尤其是优化部分和理论的关联程度比较密切。看着自己的编译器能将一段C语言程序翻译成汇编代码，还是非常有成就感的。此外，抛开编译本身的内容不谈，编译应该是我人生第一次管理一个如此庞大的项目，上学期的面向对象课程虽然也用的是java完成一个个小型项目，但编译涉及的工程量显然不是OO可以比拟的。尤其是语法分析这部分，我们将其戏称为OO第一单元Pro Max，想了想其实OO第一单元的表达式计算涉及的文法相比于编译来说真的很少，递归下降也只有三个函数。当然如此大的码量，我自然是应对的有些吃力的。我之前自认为我对代码的优雅程度是有一定要求的，但面对编译庞大的工作量我也只能屈服，一个类里上千行、大量的代码重复等在OO里不符合代码规范的行为都出现在了我的编译器里。有时候在GitHub上看到的一些学长的代码真的是非常公正优雅，令我非常羡慕。<br>&emsp;&emsp; 这次编译最大的遗憾就是没能实现很多优化了吧，但确实没有办法，因为和数据库的截止时间完美重合了，这也是我对编译课的建议之一，实验的截止时间最好能和数据库岔开，即使一周也好，当然这也是我对数据库的建议。还有一个建议就是，我真诚强烈地建议编译理论课程课件中所讲的代码可以不用Pascal而是用现在主流的一些语言，毕竟编译本身就已经很难了，让我们再理解一门过时且没学过的语言更是雪上加霜。<br>&emsp;&emsp; 这里我要特别鸣谢一下杨博文同学，如果不是他的话我应该编译器会完成得更加吃力，这学期我可以说是没少叨扰他，感谢他不厌其烦地回答了我每一个愚蠢的问题。<br>&emsp;&emsp; 至此，我已经实现了自己的处理器、操作系统与编译器，并且已经可以运行由SysY文法生成的所有程序了。经过三个学期后再回首望去，看到自己的成就，虽然每一学期都没有做到很顶尖的程度，但至少也是对自己的努力感到比较欣慰的。</p>
+]]></content>
+      <categories>
+        <category>专业课</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>Compiler</tag>
+        <tag>设计文档</tag>
       </tags>
   </entry>
 </search>
