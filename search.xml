@@ -2556,4 +2556,60 @@
         <tag>IELTS</tag>
       </tags>
   </entry>
+  <entry>
+    <title>第一封面试！Cambridge ACS 面试记录</title>
+    <url>/2025/04/26/Cam_ACS_Interview/</url>
+    <content><![CDATA[<h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1. 前言"></a>1. 前言</h2><p>我曾经这样形容我这个申请季：我就如同晚清政府一样在大英帝国面前节节碰壁。此前的申请中，被cam mlmi、ox acs拒了就不说了，被ic水灵灵的两连拒、被ucl dsml持续养鱼实在是有点难绷。所以这封面试不管结果如何，至少cambridge愿意看我一样，对我来说就已经是很大的鼓励了。收到面邀邮件那天，我正在上海梅赛德斯奔驰文化中心等待着单依纯的收官演唱会入场，看到谷歌邮箱弹出消息第一反应是ucl和爱宝又给我发广告了，仔细一看是cam，还以为又被拒绝了，再仔细一看才发现是面邀，当时激动的差点跳进黄浦江里。收到面邀+马上见到单姐，2025.4.20，那天真的是非常激动的一天。<br>关于我25fall完整的申请记录可以点这里：<a href="https://goldenkm.github.io/2024/08/24/25-Fall-Record/">25Fall 留学申请记录</a><br>下面附上面邀邮件的完整版：<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/cam_acs_interview/interview_email.jpg"
+                     
+                ></p>
+<h2 id="2-面试"><a href="#2-面试" class="headerlink" title="2. 面试"></a>2. 面试</h2><h3 id="2-1-准备"><a href="#2-1-准备" class="headerlink" title="2.1 准备"></a>2.1 准备</h3><p>虽然收到邮件很高兴，但不得不说面试内容和邮件里说的差异很大，就比如说面试里说要聊聊我的研究兴趣，但实际上完全不是的。而且我收到邮件到面试开始就只有不到48小时，我第一天还在上海，根本来不及准备一点。反正我前期准备的时间大约三小时左右吧，准备了有：自我介绍的小作文、我的research interest、对主要研究项目的介绍小作文+可能出现的问题。专业问题是一点没准备，因为我觉得专业问题浩如烟海，我肯定来不及准备（明智的选择）。</p>
+<p>面试前也随手翻了翻面试官的学术主页，引用比较高的基本都是传统ml的，近几年倒是也有iclr、nips的发表，不过在这个拥抱llm的时代做的东西仍然看起来非常古董。</p>
+<p>由于这篇博客是本人拖延了将近一周才写的，所以很多问题都记不清了，再加上有的甚至本来就没听懂，这些问题肯定是不全的。</p>
+<p>面试一共有以下三部分（<strong>无自我介绍！！</strong>）：</p>
+<ul>
+<li>general question（寒暄环节）</li>
+<li>technical question</li>
+<li>反问环节</li>
+</ul>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://cdn.jsdelivr.net/gh/goldenkm/Pic-Bed@main/cam_acs_interview/cam_acs_zoom.jpg"
+                     
+                ></p>
+<h3 id="2-2-General-Question"><a href="#2-2-General-Question" class="headerlink" title="2.2 General Question"></a>2.2 General Question</h3><ol>
+<li>Q：为什么来剑桥读mphil？<br> A：忘了，大概就是剑桥很牛逼+对research感兴趣。由于没有自我介绍，煮啵上来就已经被打了个措手不及了，心态小崩。</li>
+<li>Q：Cam ACS最感兴趣的一门课是什么？<br> A：在申请时选了五门最感兴趣的课，煮啵早就忘了都有啥课了，紧急翻申请资料找到了，随口说了一个喜欢NLP。原因是我对大模型感兴趣，并且我在智谱实习过（提到智谱的时候他oh了一声，你谱还是有点实力👍）。这里煮啵已经疯狂暗示我的研究兴趣是llm了，但可惜英国佬还是给了我一些传统ml的冲击。</li>
+<li>Q：为什么想做ai还是ml来着（记不清了）？<br>A：GPT等大模型正在改变世界巴拉巴拉，想投身于此。再次暗示哥们要搞大模型。</li>
+</ol>
+<h3 id="2-3-Technical-Question"><a href="#2-3-Technical-Question" class="headerlink" title="2.3 Technical Question"></a>2.3 Technical Question</h3><p>问完上面那些基础问题，大哥就要开始共享屏幕了，此时哥们心已经凉了半截了，结果一看见屏幕，是一个线性代数的题，煮啵心里更是凉了一大大截。虽说去年暑假完整地学了一遍考研线代基础，但数学这玩意就是你一个暑假不碰忘的就很快了，更何况我半年没碰。你好歹出个默写attention公式呢，我分分钟给你默下来了。</p>
+<p>整体的背景是就是一道线性代数的矩阵运算的过程，一个维度是 $n \times d$ 系数矩阵 $A$，一个 $1 \times n$ 的未知数矩阵 $x$，还有一个 $1 \times n$ 矩阵 $b$。</p>
+<p>问题就先问了<strong>什么时候有解</strong>、<strong>怎么求解</strong>，煮啵能听懂的问题就这俩了。然而这些跟数学有关的名词哥们是一个也不会说：消元、秩（后来想起来是rank了）、增广矩阵、系数、未知数、基础解系、通解、特解（我连解都想半天是solution）。逼的煮啵开局就先跟教授坦白了我学的是中文课本，不会用英文说，随后我俩就边比划边沟通了。</p>
+<p>最后还问了一个问题，我也没听懂，是说有三个点确定一个平面，然后巴拉巴拉巴拉巴拉（此时煮啵只想下机了，补药为难我了）。我问了他是想问我用什么模型吗，他说随你，看起来是个open question，我就是用linear regression或者svm吧，因为跟平面有关的我就想起来这俩了。他说答得非常好，不知道是不是英国佬假客气。</p>
+<h3 id="2-4-反问"><a href="#2-4-反问" class="headerlink" title="2.4 反问"></a>2.4 反问</h3><ol>
+<li>Q：多久能拿到面试结果？<br> A：老师说这个跟他没关系，是招生组的活，大概一到两个月吧。</li>
+<li>课程和科研哪个更重要？<br>A：都重要，需要找到balance。跟没说一样。</li>
+</ol>
+<h2 id="3-感想"><a href="#3-感想" class="headerlink" title="3. 感想"></a>3. 感想</h2><p>最大的感想还是感谢剑桥，因为能拿到面试真的已经算是对我很大的认可了，不管结果如何，就当积累和外国教授的真人单面经历都已经很宝贵了。</p>
+<p>第二个感想是我确实还有很大的提升空间，这也不由得让我怀疑即使真的录我了，我能否适应cam的学习，毕竟我现在连一个简单的解方程我都没办法用英文来回答，英文水平还需要多努力！</p>
+<p>最后一个感想是面试官人真的很好，早就听同学们说外国教授人都很nice，态度很好，这一看名不虚传。老师全程都非常温柔，中间zoom断了十分钟左右，我道歉，他反复安慰我不是我的问题；并且我说我对英文数学名词不了解，他也说没关系，并且在跟我聊这部分的时候语速放得很慢，基本上是一个字一个字蹦出来的了；最后也跟我说我非常享受这次聊天，really enjoy。口音的话他真的是地道的英音，没有一点口音，听不懂完全是我的问题。不管怎么说还是给了我很大安慰和信心的，谢谢carl哥。</p>
+<p>最后也分享一下我认为的在你实在听不懂时有什么办法吧！只是个人经验，不一定准确：</p>
+<ol>
+<li>“很抱歉我不太了解这个问题”，真诚是永远的必杀技；</li>
+<li>让他再说一遍；</li>
+<li>说一个尽可能沾边的答案。</li>
+</ol>
+]]></content>
+      <categories>
+        <category>升学记录</category>
+      </categories>
+      <tags>
+        <tag>留学</tag>
+        <tag>上岸</tag>
+        <tag>面试</tag>
+      </tags>
+  </entry>
 </search>
